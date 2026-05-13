@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SIPRT — Sistem Informasi Penugasan & Pelaporan Teknisi</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/tabler-icons.min.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== SIDEBAR NAVIGASI ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon"><i class="ti ti-bolt"></i></div>
+      <span>SIPRT</span>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-page="dashboard-sales">
+        <i class="ti ti-layout-dashboard"></i><span>Dashboard Sales</span>
+      </button>
+      <button class="nav-item" data-page="form-tugas">
+        <i class="ti ti-plus"></i><span>Buat Tugas</span>
+      </button>
+      <button class="nav-item" data-page="dashboard-teknisi">
+        <i class="ti ti-tool"></i><span>Dashboard Teknisi</span>
+      </button>
+      <button class="nav-item" data-page="form-laporan">
+        <i class="ti ti-file-text"></i><span>Form Laporan</span>
+      </button>
+      <button class="nav-item" data-page="template-builder">
+        <i class="ti ti-template"></i><span>Custom Template</span>
+      </button>
+      <button class="nav-item" data-page="laporan-customer">
+        <i class="ti ti-eye"></i><span>Laporan Customer</span>
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <span>v1.0.0 · Mobile-First PWA</span>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN AREA ===== -->
+  <main class="main">
+
+    <!-- Topbar -->
+    <header class="topbar">
+      <button class="menu-toggle" id="menuToggle"><i class="ti ti-menu-2"></i></button>
+      <div class="topbar-title" id="topbarTitle">Dashboard Sales</div>
+      <div class="topbar-badge" id="topbarBadge">1 / 6</div>
+    </header>
+
+    <!-- Phone frame wrapper -->
+    <div class="frame-wrapper">
+      <div class="phone-frame">
+
+        <!-- ============================================================ -->
+        <!-- PAGE 1: DASHBOARD SALES                                       -->
+        <!-- ============================================================ -->
+        <section class="page active" id="page-dashboard-sales">
+          <div class="app-header bg-blue">
+            <div class="status-bar">
+              <span>09:41</span>
+              <div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery"></i></div>
+            </div>
+            <div class="app-header-content">
+              <div>
+                <div class="header-greeting">Selamat datang,</div>
+                <div class="header-name">Budi Santoso</div>
+              </div>
+              <div class="header-actions">
+                <div class="notif-wrap"><i class="ti ti-bell"></i><span class="notif-dot"></span></div>
+                <div class="avatar">BS</div>
+              </div>
+            </div>
+          </div>
+          <div class="header-curve bg-blue"></div>
+
+          <div class="page-body">
+            <div class="metrics-grid">
+              <div class="metric-card"><div class="metric-num blue">12</div><div class="metric-label">Total Tugas</div></div>
+              <div class="metric-card"><div class="metric-num green">7</div><div class="metric-label">Selesai</div></div>
+              <div class="metric-card"><div class="metric-num orange">3</div><div class="metric-label">Pending</div></div>
+            </div>
+
+            <button class="btn-primary" onclick="goTo('form-tugas')">
+              <i class="ti ti-plus"></i> Buat Tugas Baru
+            </button>
+
+            <div class="filter-tabs">
+              <div class="filter-tab active">Semua</div>
+              <div class="filter-tab">Aktif</div>
+              <div class="filter-tab">Selesai</div>
+              <div class="filter-tab">Dibatalkan</div>
+            </div>
+
+            <div class="section-label">Daftar Pekerjaan</div>
+
+            <div class="task-card">
+              <div class="task-card-top">
+                <div class="task-title">Instalasi CCTV — PT Maju Jaya</div>
+                <span class="badge badge-blue">Berlangsung</span>
+              </div>
+              <div class="task-assignee"><div class="avatar-sm blue-bg">AR</div><span>Andi Rahmad</span></div>
+              <div class="task-meta">
+                <div class="task-date"><i class="ti ti-calendar"></i> 12 Mei 2026</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:60%;background:#1565C0"></div></div>
+                <span class="progress-pct blue">60%</span>
+              </div>
+            </div>
+
+            <div class="task-card">
+              <div class="task-card-top">
+                <div class="task-title">Servis AC — Gudang Blok B</div>
+                <span class="badge badge-yellow">Menunggu</span>
+              </div>
+              <div class="task-assignee"><div class="avatar-sm yellow-bg">DK</div><span>Doni Kusuma</span></div>
+              <div class="task-meta">
+                <div class="task-date"><i class="ti ti-calendar"></i> 14 Mei 2026</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:0%;background:#E65100"></div></div>
+                <span class="progress-pct" style="color:var(--text-secondary)">0%</span>
+              </div>
+            </div>
+
+            <div class="task-card">
+              <div class="task-card-top">
+                <div class="task-title">Perbaikan Panel Listrik</div>
+                <span class="badge badge-green">Selesai</span>
+              </div>
+              <div class="task-assignee"><div class="avatar-sm green-bg">SW</div><span>Sari Widodo</span></div>
+              <div class="task-meta">
+                <div class="task-date"><i class="ti ti-calendar"></i> 10 Mei 2026</div>
+                <div class="progress-bar"><div class="progress-fill" style="width:100%;background:#2E7D32"></div></div>
+                <span class="progress-pct green">100%</span>
+              </div>
+            </div>
+
+            <div class="section-label">Status Teknisi</div>
+            <div class="card">
+              <div class="technician-row">
+                <div class="avatar-sm blue-bg">AR</div>
+                <div class="technician-info"><div class="tech-name">Andi Rahmad</div><div class="tech-sub">1 tugas aktif</div></div>
+                <span class="badge badge-blue">Sibuk</span>
+              </div>
+              <div class="technician-row">
+                <div class="avatar-sm green-bg">DK</div>
+                <div class="technician-info"><div class="tech-name">Doni Kusuma</div><div class="tech-sub">Tidak ada tugas</div></div>
+                <span class="badge badge-green">Tersedia</span>
+              </div>
+              <div class="technician-row no-border">
+                <div class="avatar-sm gray-bg">SW</div>
+                <div class="technician-info"><div class="tech-name">Sari Widodo</div><div class="tech-sub">Off hari ini</div></div>
+                <span class="badge badge-gray">Tidak aktif</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-nav">
+            <div class="bn-item active"><i class="ti ti-home"></i><span>Beranda</span></div>
+            <div class="bn-item"><i class="ti ti-clipboard-list"></i><span>Tugas</span></div>
+            <div class="bn-item"><i class="ti ti-file-description"></i><span>Laporan</span></div>
+            <div class="bn-item"><i class="ti ti-settings"></i><span>Pengaturan</span></div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- PAGE 2: FORM BUAT TUGAS                                       -->
+        <!-- ============================================================ -->
+        <section class="page" id="page-form-tugas">
+          <div class="app-header bg-blue">
+            <div class="status-bar">
+              <span>09:41</span>
+              <div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery"></i></div>
+            </div>
+            <div class="app-header-content">
+              <button class="back-btn" onclick="goTo('dashboard-sales')"><i class="ti ti-arrow-left"></i></button>
+              <div>
+                <div class="header-name">Buat Tugas Baru</div>
+                <div class="header-greeting">Isi detail pekerjaan di bawah ini</div>
+              </div>
+            </div>
+          </div>
+          <div class="header-curve bg-blue"></div>
+
+          <div class="page-body">
+            <!-- Step indicator -->
+            <div class="step-indicator">
+              <div class="step done"><div class="step-circle done"><i class="ti ti-check"></i></div><span>Detail</span></div>
+              <div class="step-line active"></div>
+              <div class="step active"><div class="step-circle active">2</div><span>Teknisi</span></div>
+              <div class="step-line"></div>
+              <div class="step"><div class="step-circle">3</div><span>Template</span></div>
+              <div class="step-line"></div>
+              <div class="step"><div class="step-circle">4</div><span>Akses</span></div>
+            </div>
+
+            <!-- Detail pekerjaan -->
+            <div class="card">
+              <div class="card-section-title"><i class="ti ti-file-text"></i> Detail Pekerjaan</div>
+              <div class="form-group"><label>Nama Pekerjaan <span class="req">*</span></label><div class="form-input">Instalasi CCTV 8 Titik</div></div>
+              <div class="form-group"><label>Customer / Klien <span class="req">*</span></label><div class="form-input">PT Maju Jaya Abadi</div></div>
+              <div class="form-group"><label>Lokasi Pekerjaan <span class="req">*</span></label>
+                <div class="form-input form-input-icon">
+                  <span>Jl. Industri No. 45, Batam</span>
+                  <i class="ti ti-map-pin" style="color:#1565C0"></i>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group"><label>Tanggal Mulai <span class="req">*</span></label>
+                  <div class="form-input"><i class="ti ti-calendar" style="color:#1565C0"></i> 12 Mei 2026</div></div>
+                <div class="form-group"><label>Tanggal Selesai</label>
+                  <div class="form-input"><i class="ti ti-calendar" style="color:#1565C0"></i> 14 Mei 2026</div></div>
+              </div>
+              <div class="form-group"><label>Prioritas</label>
+                <div class="priority-selector">
+                  <div class="priority-opt">Rendah</div>
+                  <div class="priority-opt selected">Normal</div>
+                  <div class="priority-opt">Tinggi</div>
+                  <div class="priority-opt">Urgent</div>
+                </div>
+              </div>
+              <div class="form-group"><label>Deskripsi Pekerjaan</label>
+                <div class="form-textarea">Pemasangan 8 unit CCTV di area gudang dan kantor, termasuk konfigurasi DVR dan uji coba sistem.</div>
+              </div>
+              <div class="form-group"><label>Lampiran / Foto Referensi</label>
+                <div class="upload-area">
+                  <i class="ti ti-upload"></i>
+                  <span>Ketuk untuk unggah foto / dokumen</span>
+                  <small>JPG, PNG, PDF — maks. 10MB</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pilih teknisi -->
+            <div class="card">
+              <div class="card-section-title"><i class="ti ti-users"></i> Pilih Teknisi</div>
+              <div class="tech-select-card selected">
+                <div class="avatar-md blue-dark">AR</div>
+                <div class="tech-select-info">
+                  <div class="tech-select-name">Andi Rahmad</div>
+                  <div class="tech-select-role">Spesialis Elektronik</div>
+                  <div class="tech-select-meta"><span class="badge badge-green">Tersedia</span><span class="rating">4.8 ★</span></div>
+                </div>
+                <div class="check-circle filled"><i class="ti ti-check"></i></div>
+              </div>
+              <div class="tech-select-card">
+                <div class="avatar-md yellow-bg" style="color:#633806">DK</div>
+                <div class="tech-select-info">
+                  <div class="tech-select-name">Doni Kusuma</div>
+                  <div class="tech-select-role">Teknisi AC & Mekanik</div>
+                  <div class="tech-select-meta"><span class="badge badge-green">Tersedia</span><span class="rating">4.5 ★</span></div>
+                </div>
+                <div class="check-circle"></div>
+              </div>
+              <div class="tech-select-card disabled">
+                <div class="avatar-md gray-bg" style="color:#444441">SW</div>
+                <div class="tech-select-info">
+                  <div class="tech-select-name">Sari Widodo</div>
+                  <div class="tech-select-role">Teknisi Listrik</div>
+                  <div class="tech-select-meta"><span class="badge badge-red">Sibuk s/d 14 Mei</span></div>
+                </div>
+                <div class="check-circle"></div>
+              </div>
+            </div>
+
+            <!-- Akses customer -->
+            <div class="card">
+              <div class="card-section-title"><i class="ti ti-link"></i> Akses Laporan Customer</div>
+              <div class="toggle-row">
+                <div><div class="toggle-label">Aktifkan link akses customer</div><div class="toggle-sub">Customer bisa lihat laporan via link</div></div>
+                <div class="toggle on"></div>
+              </div>
+              <div class="form-group"><label>Email Customer</label>
+                <div class="form-input"><i class="ti ti-mail" style="color:#1565C0"></i> admin@majujaya.co.id</div>
+              </div>
+              <div class="form-group"><label>Hak akses customer</label>
+                <div class="priority-selector">
+                  <div class="priority-opt selected">Lihat saja</div>
+                  <div class="priority-opt">Beri komentar</div>
+                </div>
+              </div>
+              <div class="form-group"><label>Template laporan <span class="req">*</span></label>
+                <div class="form-input form-input-icon"><span>Template CCTV Standard</span><i class="ti ti-chevron-down"></i></div>
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn-secondary">Simpan Draft</button>
+              <button class="btn-primary" onclick="goTo('dashboard-teknisi')">Kirim Tugas <i class="ti ti-send"></i></button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- PAGE 3: DASHBOARD TEKNISI                                     -->
+        <!-- ============================================================ -->
+        <section class="page" id="page-dashboard-teknisi">
+          <div class="app-header bg-blue-dark">
+            <div class="status-bar">
+              <span>09:41</span>
+              <div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery"></i></div>
+            </div>
+            <div class="app-header-content">
+              <div>
+                <div class="header-greeting">Selamat pagi,</div>
+                <div class="header-name">Andi Rahmad</div>
+              </div>
+              <div class="header-actions">
+                <div class="notif-wrap"><i class="ti ti-bell"></i><span class="notif-dot"></span></div>
+                <div class="avatar">AR</div>
+              </div>
+            </div>
+            <div class="status-strip">
+              <div class="status-dot green"></div>
+              <span>Status: <strong>Aktif &amp; Tersedia</strong></span>
+              <div class="status-change-btn">Ubah</div>
+            </div>
+          </div>
+          <div class="header-curve bg-blue-dark"></div>
+
+          <div class="page-body">
+            <div class="metrics-grid">
+              <div class="metric-card"><div class="metric-num blue">3</div><div class="metric-label">Tugas Aktif</div></div>
+              <div class="metric-card"><div class="metric-num green">18</div><div class="metric-label">Selesai</div></div>
+              <div class="metric-card"><div class="metric-num" style="color:#F9A825">4.8</div><div class="metric-label">Rating</div></div>
+            </div>
+
+            <div class="section-row">
+              <div class="section-label" style="margin:0">Tugas Hari Ini</div>
+              <span class="badge badge-blue">3 tugas</span>
+            </div>
+
+            <!-- Tugas berlangsung -->
+            <div class="task-card accent-blue">
+              <div class="task-card-top">
+                <div class="task-title">Instalasi CCTV 8 Titik</div>
+                <span class="badge badge-blue">Berlangsung</span>
+              </div>
+              <div class="task-detail-row"><i class="ti ti-building"></i> PT Maju Jaya Abadi</div>
+              <div class="task-detail-row"><i class="ti ti-map-pin"></i> Jl. Industri No. 45, Batam</div>
+              <div class="task-detail-row"><i class="ti ti-clock"></i> 08:00 – 17:00 WIB</div>
+              <div class="task-meta" style="margin-top:8px">
+                <span style="font-size:11px;color:var(--text-secondary)">Progress</span>
+                <div class="progress-bar"><div class="progress-fill" style="width:60%;background:#1565C0"></div></div>
+                <span class="progress-pct blue">60%</span>
+              </div>
+              <div class="btn-row" style="margin-top:10px">
+                <button class="btn-secondary btn-sm"><i class="ti ti-map"></i> Navigasi</button>
+                <button class="btn-primary btn-sm" onclick="goTo('form-laporan')"><i class="ti ti-file-plus"></i> Isi Laporan</button>
+              </div>
+            </div>
+
+            <!-- Tugas menunggu -->
+            <div class="task-card accent-yellow">
+              <div class="task-card-top">
+                <div class="task-title">Cek Jaringan LAN Kantor</div>
+                <span class="badge badge-yellow">Menunggu</span>
+              </div>
+              <div class="task-detail-row"><i class="ti ti-building"></i> CV Bersama Maju</div>
+              <div class="task-detail-row"><i class="ti ti-map-pin"></i> Kawasan Industri Muka Kuning</div>
+              <div class="task-detail-row"><i class="ti ti-clock"></i> 13:00 – 16:00 WIB</div>
+              <div class="btn-row" style="margin-top:10px">
+                <button class="btn-secondary btn-sm"><i class="ti ti-map"></i> Navigasi</button>
+                <button class="btn-yellow btn-sm"><i class="ti ti-player-play"></i> Mulai Tugas</button>
+              </div>
+            </div>
+
+            <!-- Tugas besok -->
+            <div class="task-card" style="opacity:.75">
+              <div class="task-card-top">
+                <div class="task-title">Pemasangan Access Point</div>
+                <span class="badge badge-gray">Besok</span>
+              </div>
+              <div class="task-detail-row"><i class="ti ti-building"></i> Hotel Grand Batam</div>
+              <div class="task-detail-row"><i class="ti ti-calendar"></i> Rabu, 13 Mei 2026 — 09:00 WIB</div>
+            </div>
+
+            <div class="section-row">
+              <div class="section-label" style="margin:0">Riwayat Terbaru</div>
+              <span style="font-size:12px;color:#1565C0;cursor:pointer">Lihat semua</span>
+            </div>
+            <div class="card">
+              <div class="history-row">
+                <div class="history-icon green-bg"><i class="ti ti-check" style="color:#2E7D32"></i></div>
+                <div class="history-info"><div class="history-title">Perbaikan Panel Listrik</div><div class="history-sub">10 Mei 2026 · PT Industri Nusantara</div></div>
+                <span class="green" style="font-size:11px;font-weight:500">Selesai</span>
+              </div>
+              <div class="history-row no-border">
+                <div class="history-icon green-bg"><i class="ti ti-check" style="color:#2E7D32"></i></div>
+                <div class="history-info"><div class="history-title">Servis Printer Jaringan</div><div class="history-sub">8 Mei 2026 · CV Karya Mandiri</div></div>
+                <span class="green" style="font-size:11px;font-weight:500">Selesai</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="bottom-nav">
+            <div class="bn-item active"><i class="ti ti-home"></i><span>Beranda</span></div>
+            <div class="bn-item"><i class="ti ti-clipboard-list"></i><span>Tugas</span></div>
+            <div class="bn-item"><i class="ti ti-file-description"></i><span>Laporan</span></div>
+            <div class="bn-item"><i class="ti ti-settings"></i><span>Pengaturan</span></div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- PAGE 4: FORM LAPORAN TEKNISI                                  -->
+        <!-- ============================================================ -->
+        <section class="page" id="page-form-laporan">
+          <div class="app-header bg-blue-dark">
+            <div class="status-bar">
+              <span>09:41</span>
+              <div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery"></i></div>
+            </div>
+            <div class="app-header-content">
+              <button class="back-btn" onclick="goTo('dashboard-teknisi')"><i class="ti ti-arrow-left"></i></button>
+              <div style="flex:1">
+                <div class="header-name">Laporan Pekerjaan</div>
+                <div class="header-greeting">Instalasi CCTV 8 Titik — PT Maju Jaya</div>
+              </div>
+              <span class="badge" style="background:rgba(255,255,255,0.2);color:#fff">Draft</span>
+            </div>
+          </div>
+          <div class="header-curve bg-blue-dark"></div>
+
+          <div class="page-body">
+            <div class="info-strip">
+              <div class="info-strip-item"><i class="ti ti-calendar"></i> 12 Mei 2026</div>
+              <div class="info-strip-item"><i class="ti ti-clock"></i> 08:05 – sekarang</div>
+              <div class="info-strip-item"><i class="ti ti-template"></i> Template CCTV Std.</div>
+            </div>
+
+            <!-- Seksi 1 -->
+            <div class="card no-pad">
+              <div class="section-header"><i class="ti ti-info-circle"></i> Informasi Umum</div>
+              <div class="card-inner">
+                <div class="form-group"><label>Nama Teknisi</label><div class="form-input disabled">Andi Rahmad <small>(otomatis)</small></div></div>
+                <div class="form-row">
+                  <div class="form-group"><label>Jam Mulai <span class="req">*</span></label><div class="form-input"><i class="ti ti-clock" style="color:#1565C0"></i> 08:05</div></div>
+                  <div class="form-group"><label>Jam Selesai <span class="req">*</span></label><div class="form-input" style="color:var(--text-secondary)"><i class="ti ti-clock"></i> Belum selesai</div></div>
+                </div>
+                <div class="form-group"><label>Kondisi Lokasi saat Tiba <span class="req">*</span></label>
+                  <div class="priority-selector">
+                    <div class="priority-opt selected">Baik</div>
+                    <div class="priority-opt">Bermasalah</div>
+                    <div class="priority-opt">Darurat</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Seksi 2 -->
+            <div class="card no-pad">
+              <div class="section-header"><i class="ti ti-tools"></i> Detail Pekerjaan <span class="from-template-badge">Dari template</span></div>
+              <div class="card-inner">
+                <div class="form-group"><label>Deskripsi Pekerjaan yang Dilakukan <span class="req">*</span></label>
+                  <div class="form-textarea">Pemasangan 8 unit kamera CCTV dome di area gudang lantai 1 & 2. Kabel instalasi tertanam di plafon. DVR sudah dikonfigurasi dan terhubung ke monitor utama.</div>
+                </div>
+                <div class="form-group"><label>Checklist Pemasangan <span class="req">*</span></label>
+                  <div class="checklist">
+                    <div class="check-item"><div class="check-box checked"><i class="ti ti-check"></i></div><span>Kamera terpasang &amp; posisi sudah benar</span></div>
+                    <div class="check-item"><div class="check-box checked"><i class="ti ti-check"></i></div><span>DVR terkonfigurasi &amp; rekam berjalan</span></div>
+                    <div class="check-item"><div class="check-box"></div><span style="color:var(--text-secondary)">Akses remote viewing diuji</span></div>
+                    <div class="check-item"><div class="check-box"></div><span style="color:var(--text-secondary)">Pelatihan singkat ke operator</span></div>
+                  </div>
+                </div>
+                <div class="form-group"><label>Hasil Akhir Pekerjaan <span class="req">*</span></label>
+                  <div class="form-input form-input-icon"><span>Selesai sebagian</span><i class="ti ti-chevron-down"></i></div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label>Unit Terpasang</label><div class="form-input">6</div></div>
+                  <div class="form-group"><label>Dari Total Unit</label><div class="form-input disabled">8 (dari tugas)</div></div>
+                </div>
+                <div class="form-group"><label>Catatan / Kendala</label>
+                  <div class="form-textarea">Kabel di area gudang B perlu ditambah 15m. Sudah diinformasikan ke PIC customer.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Foto -->
+            <div class="card no-pad">
+              <div class="section-header"><i class="ti ti-camera"></i> Foto Dokumentasi <span class="req">*</span></div>
+              <div class="card-inner">
+                <div class="photo-grid">
+                  <div class="photo-slot filled blue-photo"><div class="photo-label">Sebelum</div></div>
+                  <div class="photo-slot filled blue-photo dark"><div class="photo-label">Proses</div></div>
+                  <div class="photo-slot add"><i class="ti ti-plus"></i><span>Tambah</span></div>
+                </div>
+                <div class="photo-hint"><i class="ti ti-info-circle"></i> Min. 2 foto. Foto akan dicap waktu otomatis.</div>
+              </div>
+            </div>
+
+            <!-- Material -->
+            <div class="card no-pad">
+              <div class="section-header"><i class="ti ti-package"></i> Material Terpakai <button class="add-inline-btn"><i class="ti ti-plus"></i> Tambah</button></div>
+              <div class="card-inner">
+                <div class="table-head"><span>Nama Material</span><span>Qty</span><span>Satuan</span></div>
+                <div class="table-row"><span>Kamera CCTV Dome</span><span>6</span><span>unit</span></div>
+                <div class="table-row"><span>Kabel Coaxial RG6</span><span>85</span><span>meter</span></div>
+                <div class="table-row last"><span>Konektor BNC</span><span>24</span><span>pcs</span></div>
+              </div>
+            </div>
+
+            <!-- TTD -->
+            <div class="card no-pad">
+              <div class="section-header"><i class="ti ti-writing"></i> Tanda Tangan &amp; Persetujuan</div>
+              <div class="card-inner">
+                <div class="sign-row">
+                  <div class="sign-box">
+                    <span class="sign-label">Teknisi</span>
+                    <div class="sign-canvas signed">
+                      <svg viewBox="0 0 80 36" xmlns="http://www.w3.org/2000/svg"><path d="M5 28 Q15 8 25 20 Q35 32 45 14 Q55 2 70 18" stroke="#1565C0" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+                    </div>
+                    <span class="sign-status ok"><i class="ti ti-check"></i> Sudah ditandatangani</span>
+                  </div>
+                  <div class="sign-box">
+                    <span class="sign-label">PIC Customer</span>
+                    <div class="sign-canvas empty"><i class="ti ti-pencil"></i><small>Ketuk untuk tanda tangan</small></div>
+                    <span class="sign-status pending">Menunggu persetujuan</span>
+                  </div>
+                </div>
+                <div class="form-group"><label>Nama PIC Customer</label><div class="form-input" style="color:var(--text-secondary)">Ketuk untuk mengisi...</div></div>
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn-secondary">Simpan Draft</button>
+              <button class="btn-primary" onclick="goTo('laporan-customer')"><i class="ti ti-send"></i> Kirim Laporan</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- PAGE 5: TEMPLATE BUILDER                                      -->
+        <!-- ============================================================ -->
+        <section class="page" id="page-template-builder">
+          <div class="app-header bg-blue">
+            <div class="status-bar">
+              <span>09:41</span>
+              <div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery"></i></div>
+            </div>
+            <div class="app-header-content">
+              <button class="back-btn" onclick="goTo('dashboard-sales')"><i class="ti ti-arrow-left"></i></button>
+              <div style="flex:1">
+                <div class="header-name">Template Builder</div>
+                <div class="header-greeting">Desain template laporan kustom</div>
+              </div>
+              <div style="display:flex;gap:8px">
+                <div class="header-pill">Preview</div>
+                <div class="header-pill white">Simpan</div>
+              </div>
+            </div>
+          </div>
+          <div class="header-curve bg-blue"></div>
+
+          <div class="page-body">
+            <div class="card">
+              <div class="form-group"><label>Nama Template <span class="req">*</span></label><div class="form-input">Template CCTV Standard</div></div>
+              <div class="form-group"><label>Kategori</label><div class="form-input form-input-icon"><span>Instalasi &amp; Pemasangan</span><i class="ti ti-chevron-down"></i></div></div>
+            </div>
+
+            <div class="tab-bar">
+              <div class="tab active">Tambah Field</div>
+              <div class="tab">Urutan &amp; Seksi</div>
+              <div class="tab">Pengaturan</div>
+            </div>
+
+            <div class="card">
+              <div class="palette-label">Tipe Field — ketuk untuk menambahkan</div>
+              <div class="field-palette">
+                <div class="palette-item"><div class="palette-icon blue-bg"><i class="ti ti-text-size"></i></div><div><div class="palette-name">Teks Pendek</div><div class="palette-sub">1 baris input</div></div></div>
+                <div class="palette-item"><div class="palette-icon blue-bg"><i class="ti ti-align-left"></i></div><div><div class="palette-name">Teks Panjang</div><div class="palette-sub">Area paragraf</div></div></div>
+                <div class="palette-item"><div class="palette-icon blue-bg"><i class="ti ti-list-check"></i></div><div><div class="palette-name">Checklist</div><div class="palette-sub">Multi centang</div></div></div>
+                <div class="palette-item"><div class="palette-icon blue-bg"><i class="ti ti-selector"></i></div><div><div class="palette-name">Dropdown</div><div class="palette-sub">Pilih satu opsi</div></div></div>
+                <div class="palette-item"><div class="palette-icon blue-bg"><i class="ti ti-camera"></i></div><div><div class="palette-name">Upload Foto</div><div class="palette-sub">Dengan label</div></div></div>
+                <div class="palette-item"><div class="palette-icon blue-bg"><i class="ti ti-hash"></i></div><div><div class="palette-name">Angka</div><div class="palette-sub">Input numerik</div></div></div>
+                <div class="palette-item"><div class="palette-icon green-bg"><i class="ti ti-writing"></i></div><div><div class="palette-name">Tanda Tangan</div><div class="palette-sub">Kanvas digital</div></div></div>
+                <div class="palette-item"><div class="palette-icon yellow-bg"><i class="ti ti-layout-columns"></i></div><div><div class="palette-name">Tabel Material</div><div class="palette-sub">Baris dinamis</div></div></div>
+              </div>
+            </div>
+
+            <div class="divider-label">Struktur template saat ini</div>
+
+            <div class="builder-canvas">
+              <div class="builder-section-header"><i class="ti ti-section"></i> Seksi 1 — Informasi Umum <div class="section-actions"><i class="ti ti-pencil"></i><i class="ti ti-trash"></i></div></div>
+              <div class="builder-field active">
+                <i class="ti ti-grip-vertical drag-handle"></i>
+                <div class="field-info">
+                  <div class="field-meta"><span class="field-type-badge blue">Teks Pendek</span><span class="req-label">Wajib diisi</span></div>
+                  <div class="field-name">Nama Teknisi</div>
+                  <div class="field-hint">Terisi otomatis dari profil</div>
+                </div>
+                <div class="field-actions"><i class="ti ti-pencil" style="color:#1565C0"></i><i class="ti ti-trash"></i></div>
+                <div class="field-active-bar"></div>
+              </div>
+              <div class="builder-field">
+                <i class="ti ti-grip-vertical drag-handle"></i>
+                <div class="field-info">
+                  <div class="field-meta"><span class="field-type-badge gray">Dropdown</span><span class="req-label">Wajib diisi</span></div>
+                  <div class="field-name">Kondisi Lokasi</div>
+                  <div class="field-hint">Baik / Bermasalah / Darurat</div>
+                </div>
+                <div class="field-actions"><i class="ti ti-pencil"></i><i class="ti ti-trash"></i></div>
+              </div>
+
+              <div class="builder-section-header"><i class="ti ti-section"></i> Seksi 2 — Detail Pekerjaan <div class="section-actions"><i class="ti ti-pencil"></i><i class="ti ti-trash"></i></div></div>
+              <div class="builder-field">
+                <i class="ti ti-grip-vertical drag-handle"></i>
+                <div class="field-info">
+                  <div class="field-meta"><span class="field-type-badge green">Teks Panjang</span><span class="req-label">Wajib diisi</span></div>
+                  <div class="field-name">Deskripsi Pekerjaan</div>
+                  <div class="field-hint">Maks. 500 karakter</div>
+                </div>
+                <div class="field-actions"><i class="ti ti-pencil"></i><i class="ti ti-trash"></i></div>
+              </div>
+              <div class="builder-field">
+                <i class="ti ti-grip-vertical drag-handle"></i>
+                <div class="field-info">
+                  <div class="field-meta"><span class="field-type-badge blue">Checklist</span><span class="req-label">Wajib diisi</span></div>
+                  <div class="field-name">Checklist Pemasangan</div>
+                  <div class="field-hint">4 item · multi-pilih</div>
+                </div>
+                <div class="field-actions"><i class="ti ti-pencil"></i><i class="ti ti-trash"></i></div>
+              </div>
+              <div class="builder-field">
+                <i class="ti ti-grip-vertical drag-handle"></i>
+                <div class="field-info">
+                  <div class="field-meta"><span class="field-type-badge yellow">Tabel Material</span></div>
+                  <div class="field-name">Material Terpakai</div>
+                  <div class="field-hint">Kolom: nama, qty, satuan</div>
+                </div>
+                <div class="field-actions"><i class="ti ti-pencil"></i><i class="ti ti-trash"></i></div>
+              </div>
+
+              <div class="builder-section-header"><i class="ti ti-section"></i> Seksi 3 — Dokumentasi &amp; Persetujuan <div class="section-actions"><i class="ti ti-pencil"></i><i class="ti ti-trash"></i></div></div>
+              <div class="builder-field">
+                <i class="ti ti-grip-vertical drag-handle"></i>
+                <div class="field-info">
+                  <div class="field-meta"><span class="field-type-badge blue">Upload Foto</span><span class="req-label">Wajib diisi</span></div>
+                  <div class="field-name">Foto Dokumentasi</div>
+                  <div class="field-hint">Min. 2 · label: Sebelum, Proses, Sesudah</div>
+                </div>
+                <div class="field-actions"><i class="ti ti-pencil"></i><i class="ti ti-trash"></i></div>
+              </div>
+              <div class="builder-field">
+                <i class="ti ti-grip-vertical drag-handle"></i>
+                <div class="field-info">
+                  <div class="field-meta"><span class="field-type-badge green">Tanda Tangan</span><span class="req-label">Wajib diisi</span></div>
+                  <div class="field-name">Tanda Tangan PIC Customer</div>
+                  <div class="field-hint">Kanvas digital + nama PIC</div>
+                </div>
+                <div class="field-actions"><i class="ti ti-pencil"></i><i class="ti ti-trash"></i></div>
+              </div>
+
+              <button class="add-section-btn"><i class="ti ti-plus"></i> Tambah Seksi Baru</button>
+            </div>
+
+            <div class="card">
+              <div class="card-section-title"><i class="ti ti-eye"></i> Visibilitas ke Customer</div>
+              <div class="toggle-row"><div><div class="toggle-label">Tampilkan tabel material</div><div class="toggle-sub">Terlihat di laporan customer</div></div><div class="toggle on"></div></div>
+              <div class="toggle-row"><div><div class="toggle-label">Sembunyikan tanda tangan</div><div class="toggle-sub">Tidak tampil di laporan customer</div></div><div class="toggle"></div></div>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn-secondary">Duplikat</button>
+              <button class="btn-primary" onclick="goTo('laporan-customer')"><i class="ti ti-device-floppy"></i> Simpan Template</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- PAGE 6: LAPORAN CUSTOMER                                      -->
+        <!-- ============================================================ -->
+        <section class="page" id="page-laporan-customer">
+          <div class="app-header customer-header">
+            <div class="status-bar">
+              <span>09:41</span>
+              <div class="status-icons"><i class="ti ti-wifi"></i><i class="ti ti-battery"></i></div>
+            </div>
+            <div class="customer-branding">
+              <div class="customer-logo"><i class="ti ti-bolt"></i></div>
+              <div>
+                <div class="customer-brand-name">TechServ Pro</div>
+                <div class="customer-brand-sub">Solusi Teknisi Profesional</div>
+              </div>
+              <div style="margin-left:auto"><span class="readonly-badge"><i class="ti ti-eye"></i> Hanya Lihat</span></div>
+            </div>
+            <div class="customer-title-block">
+              <div class="customer-report-title">Laporan Pekerjaan</div>
+              <div class="customer-report-sub">Instalasi CCTV 8 Titik</div>
+              <div class="status-pill-green"><span class="dot-green"></span> Pekerjaan Selesai</div>
+            </div>
+          </div>
+          <div class="header-curve customer-header"></div>
+
+          <div class="page-body">
+            <div class="card">
+              <div class="card-section-title"><i class="ti ti-clipboard-text"></i> Informasi Pekerjaan</div>
+              <div class="info-grid">
+                <div><div class="info-label">Customer</div><div class="info-val">PT Maju Jaya Abadi</div></div>
+                <div><div class="info-label">No. Laporan</div><div class="info-val">#LPR-2026-0412</div></div>
+                <div><div class="info-label">Tanggal</div><div class="info-val">12 Mei 2026</div></div>
+                <div><div class="info-label">Durasi Kerja</div><div class="info-val">08:05 – 16:45</div></div>
+                <div><div class="info-label">Teknisi</div><div class="info-val">Andi Rahmad</div></div>
+                <div><div class="info-label">Lokasi</div><div class="info-val">Jl. Industri No. 45</div></div>
+              </div>
+            </div>
+
+            <div class="card no-pad">
+              <div class="section-header"><i class="ti ti-tools"></i> Detail Pekerjaan</div>
+              <div class="card-inner">
+                <div class="form-group"><label>Kondisi Lokasi saat Tiba</label><span class="badge badge-green" style="width:fit-content">Baik</span></div>
+                <div class="form-group"><label>Deskripsi Pekerjaan</label>
+                  <div class="form-textarea readonly">Pemasangan 8 unit kamera CCTV dome di area gudang lantai 1 &amp; 2. Kabel instalasi tertanam di plafon. DVR sudah dikonfigurasi dan terhubung ke monitor utama.</div>
+                </div>
+                <div class="form-group"><label>Checklist Pemasangan</label>
+                  <div class="checklist">
+                    <div class="check-item"><div class="check-box green-check"><i class="ti ti-check"></i></div><span>Kamera terpasang &amp; posisi sudah benar</span></div>
+                    <div class="check-item"><div class="check-box green-check"><i class="ti ti-check"></i></div><span>DVR terkonfigurasi &amp; rekam berjalan</span></div>
+                    <div class="check-item"><div class="check-box green-check"><i class="ti ti-check"></i></div><span>Akses remote viewing diuji</span></div>
+                    <div class="check-item"><div class="check-box"></div><span style="color:var(--text-secondary);text-decoration:line-through">Pelatihan singkat ke operator</span></div>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group"><label>Hasil Akhir</label><span class="badge badge-blue">Selesai sebagian</span></div>
+                  <div class="form-group"><label>Unit Terpasang</label><div style="font-size:13px;font-weight:500">6 dari 8 unit</div></div>
+                </div>
+                <div class="form-group"><label>Catatan / Kendala</label>
+                  <div class="note-warning">Kabel di area gudang B perlu ditambah 15m. Sudah diinformasikan ke PIC customer.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card no-pad">
+              <div class="section-header"><i class="ti ti-package"></i> Material Terpakai</div>
+              <div class="card-inner">
+                <div class="table-head"><span>Material</span><span>Qty</span><span>Satuan</span></div>
+                <div class="table-row"><span>Kamera CCTV Dome</span><span>6</span><span>unit</span></div>
+                <div class="table-row"><span>Kabel Coaxial RG6</span><span>85</span><span>meter</span></div>
+                <div class="table-row last"><span>Konektor BNC</span><span>24</span><span>pcs</span></div>
+              </div>
+            </div>
+
+            <div class="card no-pad">
+              <div class="section-header"><i class="ti ti-camera"></i> Foto Dokumentasi</div>
+              <div class="card-inner">
+                <div class="photo-grid">
+                  <div class="photo-slot filled blue-photo"><div class="photo-label">Sebelum</div><div class="photo-time">08:12 WIB</div></div>
+                  <div class="photo-slot filled blue-photo dark"><div class="photo-label">Proses</div><div class="photo-time">12:34 WIB</div></div>
+                  <div class="photo-slot filled blue-photo darker"><div class="photo-label">Sesudah</div><div class="photo-time">16:41 WIB</div></div>
+                </div>
+                <div class="photo-hint"><i class="ti ti-clock"></i> Foto dicap waktu otomatis saat diunggah</div>
+              </div>
+            </div>
+
+            <div class="card no-pad">
+              <div class="section-header"><i class="ti ti-writing"></i> Tanda Tangan &amp; Persetujuan</div>
+              <div class="card-inner">
+                <div class="sign-row">
+                  <div class="sign-box">
+                    <span class="sign-label">Teknisi</span>
+                    <div class="sign-canvas signed">
+                      <svg viewBox="0 0 80 36" xmlns="http://www.w3.org/2000/svg"><path d="M5 28 Q15 8 25 20 Q35 32 45 14 Q55 2 70 18" stroke="#1565C0" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="sign-name">Andi Rahmad</div>
+                    <span class="sign-status ok"><i class="ti ti-check"></i> 12 Mei, 16:44</span>
+                  </div>
+                  <div class="sign-box">
+                    <span class="sign-label">PIC Customer</span>
+                    <div class="sign-canvas signed">
+                      <svg viewBox="0 0 80 36" xmlns="http://www.w3.org/2000/svg"><path d="M8 22 Q18 10 28 18 Q38 26 48 12 Q58 2 72 16" stroke="#2E7D32" stroke-width="2.5" fill="none" stroke-linecap="round"/></svg>
+                    </div>
+                    <div class="sign-name">Bpk. Hendra S.</div>
+                    <span class="sign-status ok"><i class="ti ti-check"></i> 12 Mei, 16:50</span>
+                  </div>
+                </div>
+                <div class="verified-strip"><i class="ti ti-shield-check"></i><div><div class="verified-title">Laporan Terverifikasi</div><div class="verified-sub">Ditandatangani kedua pihak · 12 Mei 2026</div></div></div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-section-title"><i class="ti ti-star"></i> Penilaian Layanan</div>
+              <div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px">Seberapa puas Anda dengan pekerjaan ini?</div>
+              <div class="star-row">
+                <i class="ti ti-star-filled star gold"></i>
+                <i class="ti ti-star-filled star gold"></i>
+                <i class="ti ti-star-filled star gold"></i>
+                <i class="ti ti-star-filled star gold"></i>
+                <i class="ti ti-star star empty"></i>
+              </div>
+              <div class="form-input" style="color:var(--text-secondary);margin-bottom:10px">Tambahkan komentar (opsional)...</div>
+              <button class="btn-primary" style="width:100%">Kirim Penilaian</button>
+            </div>
+
+            <div class="btn-row">
+              <button class="btn-secondary"><i class="ti ti-download"></i> Unduh PDF</button>
+              <button class="btn-secondary"><i class="ti ti-share"></i> Bagikan</button>
+            </div>
+
+            <div class="customer-footer">
+              Laporan dibuat oleh <strong style="color:#1565C0">TechServ Pro</strong><br>
+              <span>techservpro.id · Hak akses dikelola oleh Sales</span>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /phone-frame -->
+    </div><!-- /frame-wrapper -->
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
