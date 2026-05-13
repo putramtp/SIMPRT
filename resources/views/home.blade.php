@@ -2,22 +2,19 @@
 
 @section('content')
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Dashboard') }}</div>
-
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
-
-                    {{ __('You are logged in!') }}
-                </div>
-            </div>
-        </div>
+    <div class="text-center py-5">
+        <p class="text-muted">Mengalihkan ke dashboard…</p>
     </div>
 </div>
+@endsection
+
+@section('js')
+<script>
+    // Redirect to the correct dashboard based on role
+    @if(Auth::user()->hasRole('teknisi'))
+        window.location.replace("{{ route('dashboard.teknisi') }}");
+    @else
+        window.location.replace("{{ route('dashboard.sales') }}");
+    @endif
+</script>
 @endsection
