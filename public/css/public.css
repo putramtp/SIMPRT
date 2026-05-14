@@ -2122,3 +2122,718 @@ div.dataTables_wrapper > .row {
     background: var(--blue-light);
     border-bottom: 1px solid var(--border-light);
 }
+
+/* ══════════════════════════════════════════════════════════════
+   MODERN BLUE PRIMARY DESIGN — var(--blue: #1565C0) as anchor
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Topbar: blue chrome ── */
+.pwa-topbar {
+  background: var(--blue) !important;
+  border-bottom: none !important;
+  box-shadow: 0 2px 16px rgba(13,71,161,.22);
+}
+.pwa-topbar-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.pwa-topbar-title {
+  color: #fff !important;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+.pwa-topbar-user  { color: rgba(255,255,255,.78) !important; }
+.pwa-menu-btn     { color: rgba(255,255,255,.9) !important; }
+.pwa-menu-btn:hover {
+  background: rgba(255,255,255,.12) !important;
+  color: #fff !important;
+}
+.pwa-logout-btn {
+  border-color: rgba(255,255,255,.28) !important;
+  color: rgba(255,255,255,.82) !important;
+  background: none !important;
+}
+.pwa-logout-btn:hover {
+  background: rgba(255,255,255,.16) !important;
+  color: #fff !important;
+  border-color: rgba(255,255,255,.45) !important;
+}
+.notif-bell-btn { color: rgba(255,255,255,.82) !important; }
+.notif-bell-btn:hover {
+  color: #fff !important;
+  background: rgba(255,255,255,.14) !important;
+}
+.notif-toast-header { background: var(--blue-light) !important; }
+
+/* ── Sidebar: blue logo area + sharp nav ── */
+.sidebar {
+  box-shadow: 2px 0 18px rgba(0,0,0,.07);
+  border-right: 1px solid var(--border-light) !important;
+}
+.sidebar-logo {
+  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 100%);
+  color: #fff !important;
+  padding: 18px 16px;
+  border-bottom: none !important;
+}
+.sidebar-logo span { color: #fff !important; }
+.sidebar-logo-icon {
+  background: rgba(255,255,255,.18) !important;
+  color: #fff !important;
+  border-radius: var(--radius-md);
+  backdrop-filter: blur(4px);
+}
+.sidebar-nav { padding: 10px 8px; }
+.nav-item {
+  border-radius: var(--radius-md);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 9px 12px;
+  color: var(--text-secondary);
+  transition: background .18s ease, color .18s ease;
+}
+.nav-item i { font-size: 17px; transition: color .18s ease; }
+.nav-item:hover,
+.nav-item:focus {
+  background: var(--blue-light) !important;
+  color: var(--blue) !important;
+  text-decoration: none;
+}
+.nav-item.active,
+.nav-item.active:hover {
+  background: var(--blue) !important;
+  color: #fff !important;
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(21,101,192,.28);
+}
+.nav-item.active i { color: rgba(255,255,255,.92) !important; }
+.sidebar-footer { padding: 12px 12px; border-top: 1px solid var(--border-light) !important; }
+.sidebar-user { padding: 10px 4px 8px; }
+
+/* ── Bottom nav: modern frosted-glass + active pill ── */
+.pwa-bottom-nav {
+  background: rgba(255,255,255,.92) !important;
+  backdrop-filter: saturate(180%) blur(20px) !important;
+  -webkit-backdrop-filter: saturate(180%) blur(20px) !important;
+  border-top: 1px solid rgba(224,228,237,.55) !important;
+  box-shadow: 0 -4px 24px rgba(0,0,0,.09) !important;
+  padding: 6px 8px var(--safe-bottom) !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
+/* Each nav item */
+.pwa-bn-item {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 3px !important;
+  position: relative !important;
+  text-decoration: none !important;
+  color: var(--text-secondary) !important;
+  font-size: 9.5px !important;
+  font-weight: 500 !important;
+  min-height: 44px !important;
+  padding: 4px 2px 2px !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: color .18s ease !important;
+}
+
+/* Icon: becomes a pill capsule */
+.pwa-bn-item i {
+  font-size: 20px !important;
+  line-height: 1 !important;
+  width: 46px !important;
+  height: 26px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 20px !important;
+  color: inherit !important;
+  transition: background .22s ease,
+              color .22s ease,
+              transform .25s cubic-bezier(.34,1.56,.64,1),
+              box-shadow .22s ease !important;
+}
+
+/* Label */
+.pwa-bn-item span {
+  font-size: 9.5px !important;
+  font-weight: 500 !important;
+  letter-spacing: .01em !important;
+  line-height: 1 !important;
+  transition: color .18s ease, font-weight .18s ease !important;
+}
+
+/* Active state: filled blue pill + white icon + lifted */
+.pwa-bn-item.active {
+  color: var(--blue) !important;
+}
+.pwa-bn-item.active i {
+  background: var(--blue) !important;
+  color: #fff !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 12px rgba(21,101,192,.32) !important;
+}
+.pwa-bn-item.active span {
+  color: var(--blue) !important;
+  font-weight: 700 !important;
+}
+
+/* Remove the old top-line indicator */
+.pwa-bn-item::after        { display: none !important; }
+.pwa-bn-item.active::after { display: none !important; }
+
+/* Tap feedback: squeeze the pill */
+.pwa-bn-item:active i {
+  transform: scale(.82) !important;
+  box-shadow: none !important;
+  transition: transform .1s ease !important;
+}
+
+/* ── Page header component ── */
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: .75rem;
+  padding: .875rem 1.25rem;
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-light);
+  border-left: 4px solid var(--blue);
+  box-shadow: 0 1px 6px rgba(0,0,0,.04);
+  margin-bottom: 1.25rem;
+  animation: mblueIn .32s .02s both ease-out;
+}
+.page-header h4 {
+  margin: 0;
+  color: var(--text);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -.02em;
+}
+
+/* ── KPI cards ── */
+.kpi-card {
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-lg) !important;
+  position: relative;
+  overflow: hidden;
+  transition: transform .22s ease, box-shadow .22s ease;
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--blue);
+  border-radius: 0;
+}
+.kpi-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(21,101,192,.13);
+}
+.kpi-icon { border-radius: var(--radius-md); }
+.kpi-num  { letter-spacing: -.025em; }
+
+/* ── Panel cards ── */
+.panel-card {
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+}
+.panel-card-header {
+  background: var(--white) !important;
+  color: var(--text) !important;
+  font-size: .7rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .05em !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  padding: 10px 14px !important;
+  border-left: 3px solid var(--blue);
+}
+.panel-card-header i { color: var(--blue); }
+
+/* ── Form cards ── */
+.form-card {
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-lg) !important;
+  overflow: hidden;
+}
+.form-card-header {
+  background: var(--white) !important;
+  color: var(--text) !important;
+  font-size: .7rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .05em !important;
+  text-transform: uppercase !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  padding: 10px 16px !important;
+  border-left: 3px solid var(--blue);
+}
+.form-card-header i { color: var(--blue); }
+
+/* ── Bootstrap btn-primary → var(--blue) ── */
+.btn-primary {
+  background-color: var(--blue) !important;
+  border-color: var(--blue) !important;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(21,101,192,.22);
+  transition: all .18s ease;
+}
+.btn-primary:hover {
+  background-color: var(--blue-dark) !important;
+  border-color: var(--blue-dark) !important;
+  box-shadow: 0 4px 14px rgba(21,101,192,.36);
+  transform: translateY(-1px);
+}
+.btn-primary:active {
+  background-color: var(--blue-dark) !important;
+  transform: translateY(0) !important;
+  box-shadow: 0 1px 4px rgba(21,101,192,.2) !important;
+}
+.btn-primary:focus-visible {
+  box-shadow: 0 0 0 3px rgba(21,101,192,.3) !important;
+}
+.btn-outline-primary {
+  color: var(--blue) !important;
+  border-color: var(--blue) !important;
+  font-weight: 500;
+  transition: all .18s ease;
+}
+.btn-outline-primary:hover {
+  background-color: var(--blue) !important;
+  border-color: var(--blue) !important;
+  color: #fff !important;
+}
+.btn-outline-secondary {
+  border-radius: var(--radius-md) !important;
+  font-weight: 500;
+  transition: all .18s ease !important;
+}
+.btn { border-radius: var(--radius-md) !important; }
+.btn:active { transform: translateY(0) !important; }
+
+/* ── Form controls: blue focus ring ── */
+.form-control,
+.form-select {
+  border-color: var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  transition: border-color .18s, box-shadow .18s !important;
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(21,101,192,.14) !important;
+}
+.pwa-container .form-label {
+  font-size: .72rem !important;
+  font-weight: 700 !important;
+  color: var(--text-secondary) !important;
+  text-transform: uppercase !important;
+  letter-spacing: .05em !important;
+  margin-bottom: .35rem !important;
+}
+textarea.form-control { resize: vertical; }
+
+/* ── Bootstrap cards ── */
+.pwa-container .card {
+  border: 1px solid var(--border-light) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 1px 6px rgba(0,0,0,.04) !important;
+}
+
+/* ── Tables ── */
+.pwa-container .table thead th {
+  font-size: .68rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: .07em !important;
+  color: var(--text-secondary) !important;
+  background: var(--bg) !important;
+  border-bottom: 2px solid var(--border) !important;
+  white-space: nowrap;
+  padding: 10px 12px !important;
+}
+.pwa-container .table td {
+  padding: 10px 12px !important;
+  vertical-align: middle;
+  font-size: .875rem;
+}
+.pwa-container .table-hover tbody tr { transition: background .1s ease; }
+.pwa-container .table-hover tbody tr:hover > td {
+  background-color: var(--blue-light) !important;
+}
+
+/* ── DataTables: full controls redesign ── */
+
+/* Controls top bar (length + search) */
+div.dataTables_wrapper > .row:first-child {
+  background: var(--bg) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  padding: .625rem 1rem !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: .5rem !important;
+}
+/* Reset Bootstrap col widths so space-between works */
+div.dataTables_wrapper > .row:first-child > [class*="col"] {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Controls bottom bar (info + pagination) */
+div.dataTables_wrapper > .row:last-child {
+  border-top: 1px solid var(--border-light) !important;
+  padding: .5rem 1rem !important;
+  margin: 0 !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+}
+/* Reset Bootstrap col widths for bottom bar too */
+div.dataTables_wrapper > .row:last-child > [class*="col"] {
+  flex: 0 0 auto !important;
+  width: auto !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Length: "Tampilkan [select] data" */
+.dataTables_length label {
+  display: flex !important;
+  align-items: center !important;
+  gap: .4rem !important;
+  font-size: .775rem !important;
+  font-weight: 500 !important;
+  color: var(--text-secondary) !important;
+  white-space: nowrap !important;
+  margin: 0 !important;
+}
+.dataTables_length select.form-select,
+.dataTables_length select {
+  display: inline-block !important;
+  min-height: unset !important;
+  height: 28px !important;
+  width: 64px !important;
+  padding: 0 1.4rem 0 .55rem !important;
+  font-size: .775rem !important;
+  font-weight: 700 !important;
+  color: var(--text) !important;
+  background-color: var(--white) !important;
+  /* single custom chevron — remove Bootstrap's and native arrows */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%237a8099' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+  background-repeat: no-repeat !important;
+  background-position: right .35rem center !important;
+  background-size: 10px 8px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  border: 1.5px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  cursor: pointer !important;
+  transition: border-color .15s, box-shadow .15s !important;
+  line-height: 28px !important;
+}
+.dataTables_length select:focus {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(21,101,192,.12) !important;
+  outline: none !important;
+}
+
+/* Filter: search input */
+.dataTables_filter {
+  display: flex !important;
+  align-items: center !important;
+}
+.dataTables_filter label {
+  display: flex !important;
+  align-items: center !important;
+  gap: .4rem !important;
+  font-size: .775rem !important;
+  font-weight: 500 !important;
+  color: var(--text-secondary) !important;
+  margin: 0 !important;
+  white-space: nowrap !important;
+}
+.dataTables_filter input.form-control,
+.dataTables_filter input {
+  min-height: unset !important;
+  height: 28px !important;
+  width: 190px !important;
+  font-size: .775rem !important;
+  padding: 0 .65rem !important;
+  border: 1.5px solid var(--border) !important;
+  border-radius: var(--radius-md) !important;
+  background: var(--white) !important;
+  color: var(--text) !important;
+  transition: border-color .15s, box-shadow .15s, width .2s ease !important;
+}
+.dataTables_filter input:focus {
+  border-color: var(--blue) !important;
+  box-shadow: 0 0 0 3px rgba(21,101,192,.12) !important;
+  outline: none !important;
+  width: 230px !important;
+}
+
+/* Info text */
+.dataTables_info {
+  font-size: .72rem !important;
+  color: var(--text-secondary) !important;
+  padding: 0 !important;
+  line-height: 1 !important;
+}
+
+/* Pagination — Bootstrap 5 uses .page-item/.page-link */
+.dataTables_paginate {
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+}
+.dataTables_paginate .pagination {
+  margin: 0 !important;
+  display: flex !important;
+  gap: 2px !important;
+}
+.dataTables_paginate .page-link {
+  font-size: .72rem !important;
+  padding: .28rem .58rem !important;
+  border-radius: var(--radius-sm) !important;
+  border-color: var(--border-light) !important;
+  color: var(--text-secondary) !important;
+  min-height: unset !important;
+  line-height: 1.4 !important;
+  transition: all .15s ease !important;
+}
+.dataTables_paginate .page-item.active .page-link {
+  background-color: var(--blue) !important;
+  border-color: var(--blue) !important;
+  color: #fff !important;
+  font-weight: 700 !important;
+}
+.dataTables_paginate .page-item:not(.disabled):not(.active) .page-link:hover {
+  background: var(--blue-light) !important;
+  color: var(--blue) !important;
+  border-color: var(--blue-light) !important;
+}
+.dataTables_paginate .page-item.disabled .page-link {
+  color: var(--border) !important;
+  background: transparent !important;
+}
+
+/* Mobile: keep controls usable */
+@media (max-width: 639px) {
+  div.dataTables_wrapper > .row:first-child { justify-content: space-between; }
+  .dataTables_filter input { width: 140px !important; }
+  .dataTables_filter input:focus { width: 170px !important; }
+}
+
+/* ── Alerts ── */
+.alert-success {
+  background: var(--green-light) !important;
+  border: 1px solid rgba(46,125,50,.2) !important;
+  border-left: 3px solid var(--green) !important;
+  color: #27500A !important;
+  border-radius: var(--radius-md) !important;
+  font-size: .875rem;
+}
+.alert-danger  {
+  border-left: 3px solid var(--red) !important;
+  border-radius: var(--radius-md) !important;
+}
+.alert-warning {
+  border-left: 3px solid var(--yellow) !important;
+  border-radius: var(--radius-md) !important;
+}
+.alert-info {
+  border-left: 3px solid var(--blue) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+/* ── Badges ── */
+.badge.bg-secondary { background-color: var(--gray-light) !important; color: var(--text-secondary) !important; }
+.badge.bg-info      { background: var(--blue-light) !important; color: #0C447C !important; border: none !important; }
+.badge.bg-success   { background: var(--green-light) !important; color: #27500A !important; }
+.badge.bg-warning   { background: var(--yellow-light) !important; color: #633806 !important; }
+.badge.bg-danger    { background: #FCEBEB !important; color: var(--red) !important; }
+
+/* ── Summary card header ── */
+.summary-card-header {
+  background: linear-gradient(135deg, var(--blue-dark), var(--blue)) !important;
+}
+
+/* ── Report hero ── */
+.report-hero {
+  background: linear-gradient(135deg, var(--blue-dark) 0%, #1976D2 100%);
+}
+
+/* ── Task detail header (teknisi dashboard) ── */
+.task-detail-header {
+  background: linear-gradient(135deg, var(--blue-dark), var(--blue)) !important;
+}
+
+/* ── Breadcrumb ── */
+.pwa-breadcrumb a { color: var(--blue) !important; font-weight: 600; }
+
+/* ── Tech panel avatar ── */
+.tech-panel-avatar { background: var(--blue-light) !important; color: #0C447C !important; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #b0b8cc; }
+
+/* ── Focus ring ── */
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+/* ── Staggered entrance animations ── */
+@keyframes mblueIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.pwa-breadcrumb               { animation: mblueIn .3s .00s both ease-out; }
+.kpi-card:nth-child(1)        { animation: mblueIn .35s .04s both ease-out; }
+.kpi-card:nth-child(2)        { animation: mblueIn .35s .09s both ease-out; }
+.kpi-card:nth-child(3)        { animation: mblueIn .35s .14s both ease-out; }
+.kpi-card:nth-child(4)        { animation: mblueIn .35s .19s both ease-out; }
+.panel-card                   { animation: mblueIn .35s .07s both ease-out; }
+.form-card                    { animation: mblueIn .35s .05s both ease-out; }
+.summary-card                 { animation: mblueIn .35s .12s both ease-out; }
+.report-hero                  { animation: mblueIn .32s .03s both ease-out; }
+.report-info-card             { animation: mblueIn .32s .07s both ease-out; }
+.pwa-container > .card        { animation: mblueIn .35s .05s both ease-out; }
+
+/* ── Palette / Canvas card headers (template builder) ── */
+.palette-card-header {
+  background: var(--white) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+  border-left: 3px solid var(--blue);
+  font-size: .7rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .05em !important;
+  text-transform: uppercase !important;
+  color: var(--text-secondary) !important;
+}
+.canvas-toolbar {
+  background: var(--white) !important;
+  border-bottom: 1px solid var(--border-light) !important;
+}
+.palette-item:hover { border-color: var(--blue) !important; background: var(--blue-light) !important; }
+
+/* ── report-info-card-header: blue accent ── */
+.report-info-card-header {
+  border-left: 3px solid var(--blue);
+}
+.report-info-card-header i { color: var(--blue); }
+
+/* ══════════════════════════════════════════════════════════════
+   DATATABLES PROCESSING — modern spinner card
+   DataTables 1.13.8 + Bootstrap 5 renders:
+   <div class="dataTables_processing card" style="position:absolute;
+        top:50%;left:50%;width:17em;height:2em;margin-left:-8.5em;
+        margin-top:-2.5em;">Memuat data…</div>
+   We override every inline style with !important and add a spinner.
+   ══════════════════════════════════════════════════════════════ */
+
+.dataTables_processing {
+  /* override inline width / height / margin centering */
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+
+  /* re-center cleanly */
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+
+  /* card chrome */
+  background: var(--white) !important;
+  border: 1px solid var(--border-light) !important;
+  border-top: 3px solid var(--blue) !important;
+  border-radius: var(--radius-lg) !important;
+  box-shadow: 0 8px 32px rgba(21,101,192,.18), 0 2px 10px rgba(0,0,0,.07) !important;
+
+  /* layout */
+  align-items: center !important;
+  gap: .6rem !important;
+  padding: .75rem 1.35rem .75rem 1rem !important;
+  white-space: nowrap !important;
+  z-index: 1000 !important;
+
+  /* typography */
+  font-size: .8rem !important;
+  font-weight: 600 !important;
+  color: var(--text) !important;
+  letter-spacing: -.01em !important;
+
+  /* entrance */
+  animation: dtCardIn .2s ease both !important;
+}
+
+/* Only apply flex when DataTables sets display:block (visible state).
+   This prevents overriding the display:none DataTables uses to hide it. */
+.dataTables_processing[style*="block"] {
+  display: flex !important;
+}
+
+/* Spinning ring */
+.dataTables_processing::before {
+  content: '' !important;
+  display: block !important;
+  flex-shrink: 0 !important;
+  width: 17px !important;
+  height: 17px !important;
+  border: 2.5px solid var(--border) !important;
+  border-top-color: var(--blue) !important;
+  border-radius: 50% !important;
+  animation: dtSpin .55s linear infinite !important;
+}
+
+/* Dim pulse dot — bottom-right accent */
+.dataTables_processing::after {
+  content: '' !important;
+  position: absolute !important;
+  bottom: 6px !important;
+  right: 10px !important;
+  width: 5px !important;
+  height: 5px !important;
+  border-radius: 50% !important;
+  background: var(--blue) !important;
+  animation: dtPulse 1s ease-in-out infinite !important;
+  opacity: .5 !important;
+}
+
+@keyframes dtSpin {
+  to { transform: rotate(360deg); }
+}
+@keyframes dtCardIn {
+  from { opacity: 0; transform: translate(-50%, -46%); }
+  to   { opacity: 1; transform: translate(-50%, -50%); }
+}
+@keyframes dtPulse {
+  0%, 100% { opacity: .25; transform: scale(.8); }
+  50%       { opacity: .7;  transform: scale(1.2); }
+}
+
+/* Table rows fade while loading */
+.dataTables_wrapper.processing tbody { opacity: .45; transition: opacity .2s ease; }
+.dataTables_wrapper:not(.processing) tbody { opacity: 1; transition: opacity .25s ease; }

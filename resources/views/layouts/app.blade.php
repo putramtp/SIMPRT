@@ -125,6 +125,9 @@
             <button class="pwa-menu-btn" id="menuToggle" aria-label="Menu">
                 <i class="ti ti-menu-2"></i>
             </button>
+            <div class="pwa-topbar-icon">
+                <img src="{{ asset('favicon/android-chrome-192x192.png') }}" alt="SIPRT" width="22" height="22">
+            </div>
             <span class="pwa-topbar-title">{{ config('app.name', 'SIPRT') }}</span>
             <div class="pwa-topbar-right">
                 {{-- Notification bell (teknisi only) --}}

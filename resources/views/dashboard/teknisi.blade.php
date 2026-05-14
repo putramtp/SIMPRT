@@ -96,9 +96,9 @@
     <div class="tek-main">
 
         {{-- My tasks --}}
-        <div class="section-label-row">
-            <h6>Tugas Saya</h6>
-            <a href="{{ route('laporan.create') }}" class="btn btn-sm btn-primary">
+        <div class="page-header">
+            <h4>Tugas Saya</h4>
+            <a href="{{ route('laporan.create') }}" class="btn btn-primary btn-sm">
                 <i class="ti ti-plus me-1"></i>Buat Laporan
             </a>
         </div>

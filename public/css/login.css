@@ -6,13 +6,13 @@
   --brand-panel:  #111827;
   --brand-card:   #161d2e;
   --brand-border: rgba(255,255,255,.07);
-  --brand-accent: #4f8ef7;
-  --brand-glow:   #3b72e8;
+  --brand-accent: #1976D2;
+  --brand-glow:   #1565C0;
   --brand-muted:  #6b7a99;
   --brand-text:   #e2e8f5;
   --brand-sub:    #8a96b0;
   --input-bg:     #1c2539;
-  --input-border: rgba(79,142,247,.2);
+  --input-border: rgba(25,118,210,.22);
   --radius-card:  20px;
   --radius-input: 12px;
 }
@@ -125,7 +125,7 @@ body {
 .login-brand-icon {
   width: 40px; height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--brand-accent), #7c3aed);
+  background: linear-gradient(135deg, var(--brand-accent), #0D47A1);
   display: flex; align-items: center; justify-content: center;
   font-size: 1.1rem;
   color: #fff;
@@ -298,7 +298,7 @@ body {
   padding: .9rem 1.25rem;
   border: none;
   border-radius: var(--radius-input);
-  background: linear-gradient(135deg, var(--brand-accent) 0%, #3b58e8 100%);
+  background: linear-gradient(135deg, var(--brand-accent) 0%, var(--brand-glow) 100%);
   color: #fff;
   font-family: 'Syne', sans-serif;
   font-size: 1rem;
@@ -308,7 +308,7 @@ body {
   position: relative;
   overflow: hidden;
   transition: transform .18s, box-shadow .18s;
-  box-shadow: 0 6px 24px rgba(59,114,232,.38);
+  box-shadow: 0 6px 24px rgba(21,101,192,.38);
 }
 
 .login-btn::before {
@@ -321,12 +321,12 @@ body {
 
 .login-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(59,114,232,.5);
+  box-shadow: 0 10px 30px rgba(21,101,192,.5);
 }
 
 .login-btn:active {
   transform: translateY(0);
-  box-shadow: 0 4px 14px rgba(59,114,232,.3);
+  box-shadow: 0 4px 14px rgba(21,101,192,.3);
 }
 
 /* ── Divider ────────────────────────────────────────── */

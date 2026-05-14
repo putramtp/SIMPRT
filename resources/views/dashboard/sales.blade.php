@@ -81,10 +81,10 @@ div.dataTables_wrapper { padding: .5rem .75rem .75rem; }
         </div>
 
         {{-- Recent tasks --}}
-        <div class="section-label-row">
-            <h6>Tugas Terbaru</h6>
+        <div class="page-header">
+            <h4>Tugas Terbaru</h4>
             @can('create customers')
-            <a href="{{ route('tugas.create') }}" class="btn btn-sm btn-primary">
+            <a href="{{ route('tugas.create') }}" class="btn btn-primary btn-sm">
                 <i class="ti ti-plus me-1"></i>Buat Tugas
             </a>
             @endcan

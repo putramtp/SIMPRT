@@ -33,14 +33,14 @@ Route::middleware('auth')->group(function () {
     // ── Tugas (Tasks) ─────────────────────────────────────────────────
     // View: all authenticated users
     Route::get('tugas', [TugasController::class, 'index'])->name('tugas.index');
-    Route::get('tugas/{tuga}', [TugasController::class, 'show'])->name('tugas.show');
+    Route::get('tugas/{tugas}', [TugasController::class, 'show'])->name('tugas.show');
     // Manage: admin|sales only
     Route::get('tugas/create', [TugasController::class, 'create'])->middleware('role:admin|sales')->name('tugas.create');
     Route::post('tugas', [TugasController::class, 'store'])->middleware('role:admin|sales')->name('tugas.store');
-    Route::get('tugas/{tuga}/edit', [TugasController::class, 'edit'])->middleware('role:admin|sales')->name('tugas.edit');
-    Route::put('tugas/{tuga}', [TugasController::class, 'update'])->middleware('role:admin|sales')->name('tugas.update');
-    Route::patch('tugas/{tuga}', [TugasController::class, 'update'])->middleware('role:admin|sales');
-    Route::delete('tugas/{tuga}', [TugasController::class, 'destroy'])->middleware('role:admin|sales')->name('tugas.destroy');
+    Route::get('tugas/{tugas}/edit', [TugasController::class, 'edit'])->middleware('role:admin|sales')->name('tugas.edit');
+    Route::put('tugas/{tugas}', [TugasController::class, 'update'])->middleware('role:admin|sales')->name('tugas.update');
+    Route::patch('tugas/{tugas}', [TugasController::class, 'update'])->middleware('role:admin|sales');
+    Route::delete('tugas/{tugas}', [TugasController::class, 'destroy'])->middleware('role:admin|sales')->name('tugas.destroy');
 
     // ── Laporan (Reports) ─────────────────────────────────────────────
     // Explicit paths must come before {laporan} wildcard

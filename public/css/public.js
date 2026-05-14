@@ -40,9 +40,21 @@ setTimeout(function () {
 
 /* ── DataTables global defaults (applied after DT loaded) ── */
 document.addEventListener('DOMContentLoaded', function () {
-    if (typeof $.fn !== 'undefined' && typeof $.fn.dataTable !== 'undefined') {
-        $.fn.dataTable.ext.errMode = 'none';
-    }
+    if (typeof $.fn === 'undefined' || typeof $.fn.dataTable === 'undefined') return;
+
+    $.fn.dataTable.ext.errMode = 'none';
+
+    /* Global defaults: search placeholder + page length options */
+    $.extend(true, $.fn.dataTable.defaults, {
+        language: {
+            searchPlaceholder: 'Cari...',
+        },
+    });
+
+    /* Toggle .processing on wrapper so tbody can fade */
+    $(document).on('processing.dt', function (e, settings, processing) {
+        $(settings.nTableWrapper).toggleClass('processing', processing);
+    });
 });
 
 })();
