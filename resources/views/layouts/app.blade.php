@@ -127,6 +127,13 @@
             </button>
             <span class="pwa-topbar-title">{{ config('app.name', 'SIPRT') }}</span>
             <div class="pwa-topbar-right">
+                {{-- Notification bell (teknisi only) --}}
+                @if(Auth::user()->hasRole('teknisi'))
+                <button class="notif-bell-btn" id="notifBell" title="Notifikasi">
+                    <i class="ti ti-bell"></i>
+                    <span class="notif-badge" id="notifBadge"></span>
+                </button>
+                @endif
                 <span class="pwa-topbar-user d-none d-md-block">{{ Auth::user()->name }}</span>
                 <form method="POST" action="{{ route('logout') }}" class="mb-0 d-none d-md-block">
                     @csrf
@@ -227,7 +234,7 @@
 
     // Close sidebar on nav link tap (mobile)
     sidebar?.querySelectorAll('.nav-item').forEach(el =>
-        el.addEventListener('click', () => { if (window.innerWidth < 768) closeSidebar(); }));
+        el.addEventListener('click', () => { if (window.innerWidth < 640) closeSidebar(); }));
 
     // ── Password visibility (login page) ──
     const toggleBtn = document.getElementById('togglePassword');
@@ -252,6 +259,79 @@
 
 <script src="{{ asset('css/public.js') }}?v={{ filemtime(public_path('css/public.js')) }}"></script>
 @yield('js')
+
+{{-- ── Pusher / Laravel Echo (teknisi only, runs when Pusher key is configured) ── --}}
+@auth
+@if(Auth::user()->hasRole('teknisi') && config('broadcasting.connections.pusher.key'))
+<script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.17.1/dist/echo.iife.js"></script>
+<script>
+(function () {
+    /* Notification toast container */
+    var $toastBox = $('<div id="notifToastBox" style="position:fixed;top:68px;right:12px;z-index:9998;display:flex;flex-direction:column;gap:8px;max-width:320px;"></div>').appendTo('body');
+
+    function showToast(data) {
+        var id = 'nt' + Date.now();
+        var html = '<div id="' + id + '" class="notif-toast" style="cursor:pointer;" onclick="window.location=\'' + data.url + '\'">'
+            + '<div class="notif-toast-header">'
+            + '<i class="ti ti-clipboard-list me-1" style="color:var(--blue);"></i>'
+            + '<strong style="flex:1;font-size:.8rem;">Tugas Baru</strong>'
+            + '<button style="background:none;border:none;cursor:pointer;color:var(--text-secondary);font-size:16px;line-height:1;" '
+            + 'onclick="event.stopPropagation();$(\'#' + id + '\').remove();">&times;</button>'
+            + '</div>'
+            + '<div style="padding:.5rem .75rem;">'
+            + '<div style="font-size:.82rem;font-weight:600;color:var(--text);">' + $('<span>').text(data.title).html() + '</div>'
+            + '<div style="font-size:.72rem;color:var(--text-secondary);margin-top:2px;">'
+            + $('<span>').text(data.customer_name).html() + ' · ' + $('<span>').text(data.due_date).html()
+            + '</div>'
+            + '</div>'
+            + '</div>';
+        $toastBox.prepend(html);
+        setTimeout(function() { $('#' + id).fadeOut(400, function() { $(this).remove(); }); }, 7000);
+    }
+
+    function bumpBadge() {
+        var $b = $('#notifBadge');
+        var n = (parseInt($b.text()) || 0) + 1;
+        $b.text(n).addClass('has-notif');
+    }
+
+    /* Clear badge on bell click */
+    $('#notifBell').on('click', function() {
+        $('#notifBadge').text('').removeClass('has-notif');
+    });
+
+    /* Connect Echo */
+    try {
+        window.Echo = new Echo({
+            broadcaster: 'pusher',
+            key: '{{ config("broadcasting.connections.pusher.key") }}',
+            cluster: '{{ config("broadcasting.connections.pusher.options.cluster", "ap1") }}',
+            forceTLS: true,
+            authEndpoint: '/broadcasting/auth',
+            auth: { headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } },
+        });
+
+        Echo.private('App.Models.User.{{ Auth::id() }}')
+            .listen('.TaskAssigned', function(data) {
+                showToast(data);
+                bumpBadge();
+            });
+    } catch (err) {
+        console.warn('[SIPRT] Echo not connected:', err.message);
+    }
+})();
+</script>
+@endif
+
+{{-- ── Service Worker registration ── --}}
+<script>
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        .catch(function(err) { console.warn('[SW] Registration failed:', err); });
+}
+</script>
+@endauth
 
 </body>
 </html>

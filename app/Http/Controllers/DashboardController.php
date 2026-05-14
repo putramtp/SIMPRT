@@ -12,14 +12,20 @@ class DashboardController extends Controller
 {
     public function sales()
     {
-        $totalTasks     = Task::count();
-        $pendingTasks   = Task::where('status', 'pending')->count();
-        $completedTasks = Task::where('status', 'completed')->count();
-        $totalCustomers = Customer::count();
-        $recentTasks    = Task::with(['customer', 'assignee'])->latest()->take(5)->get();
+        $totalTasks      = Task::count();
+        $pendingTasks    = Task::where('status', 'pending')->count();
+        $inProgressTasks = Task::where('status', 'in_progress')->count();
+        $completedTasks  = Task::where('status', 'completed')->count();
+        $totalCustomers  = Customer::count();
+
+        $teknisiList = User::role('teknisi')
+            ->withCount(['tasks as tasks_count' => fn($q) => $q->whereIn('status', ['pending', 'in_progress'])])
+            ->orderByDesc('tasks_count')
+            ->get();
 
         return view('dashboard.sales', compact(
-            'totalTasks', 'pendingTasks', 'completedTasks', 'totalCustomers', 'recentTasks'
+            'totalTasks', 'pendingTasks', 'inProgressTasks', 'completedTasks',
+            'totalCustomers', 'teknisiList'
         ));
     }
 

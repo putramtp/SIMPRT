@@ -3,7 +3,19 @@
     "allow": [
       "Bash(php artisan *)",
       "Bash(findstr /i \"dashboard home tugas laporan customer user template\")",
-      "Bash(composer require *)"
+      "Bash(composer require *)",
+      "Bash(findstr /n \"H5\\\\|template\\\\|palette\\\\|canvas\\\\|builder\" \"D:\\\\laravel-project\\\\SIPRT\\\\mockup\\\\index.html\")",
+      "Bash(Get-ChildItem *)",
+      "PowerShell(New-Item *)",
+      "Bash(php -l app/Http/Controllers/TemplateController.php)",
+      "Bash(php -l app/Http/Controllers/CustomerController.php)",
+      "Bash(php -l app/Models/Template.php)",
+      "Bash(php -l routes/web.php)",
+      "Bash(php *)",
+      "Bash(findstr /i \"gmp\")",
+      "Bash(findstr *)",
+      "Bash(Select-String *)",
+      "Bash(not exist *)"
     ]
   },
   "enabledPlugins": {

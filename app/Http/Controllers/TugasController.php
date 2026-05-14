@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\TaskAssigned;
 use App\Models\Customer;
 use App\Models\Task;
 use App\Models\User;
@@ -63,7 +64,12 @@ class TugasController extends Controller
         $validated['created_by'] = Auth::id();
         $validated['status']     = 'pending';
 
-        Task::create($validated);
+        $task = Task::create($validated);
+
+        // Only broadcast if Pusher is configured
+        if (config('broadcasting.connections.pusher.key')) {
+            TaskAssigned::dispatch($task);
+        }
 
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil dibuat.');
     }

@@ -59,7 +59,14 @@ php artisan key:generate
 ```
 
 Edit `.env`:
+```env
+APP_NAME=SIPRT
+APP_URL=http://localhost
 
+DB_DATABASE=your_db
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
 ```bash
 # 4. Database

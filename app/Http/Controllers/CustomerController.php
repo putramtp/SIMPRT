@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Customer;
 use App\Models\Report;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Yajra\DataTables\Facades\DataTables;
 
 class CustomerController extends Controller
@@ -101,6 +102,32 @@ class CustomerController extends Controller
                 ->rawColumns(['status_badge'])
                 ->make(true);
         }
-        return view('laporan.customer', compact('customer'));
+
+        $reports = Report::with(['task', 'teknisi'])
+            ->whereHas('task', fn($q) => $q->where('customer_id', $customer->id))
+            ->latest()
+            ->get();
+
+        $signedUrl = URL::temporarySignedRoute(
+            'customers.public-laporan',
+            now()->addDays(30),
+            ['customer' => $customer->id]
+        );
+
+        return view('laporan.customer', compact('customer', 'reports', 'signedUrl'));
+    }
+
+    public function publicLaporan(Request $request, Customer $customer)
+    {
+        if (!$request->hasValidSignature()) {
+            abort(403, 'Link tidak valid atau sudah kadaluarsa.');
+        }
+
+        $reports = Report::with(['task', 'teknisi'])
+            ->whereHas('task', fn($q) => $q->where('customer_id', $customer->id))
+            ->latest()
+            ->get();
+
+        return view('laporan.customer_public', compact('customer', 'reports'));
     }
 }

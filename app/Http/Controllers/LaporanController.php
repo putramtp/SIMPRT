@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Report;
 use App\Models\Task;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
@@ -46,9 +47,11 @@ class LaporanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'task_id'     => 'required|exists:tasks,id',
-            'description' => 'required|string',
-            'photo'       => 'nullable|image|max:2048',
+            'task_id'        => 'required|exists:tasks,id',
+            'description'    => 'required|string',
+            'photo'          => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+            'signature_tech' => 'nullable|string',
+            'signature_cust' => 'nullable|string',
         ]);
 
         $validated['user_id'] = Auth::id();
@@ -57,6 +60,10 @@ class LaporanController extends Controller
         if ($request->hasFile('photo')) {
             $validated['photo'] = $request->file('photo')->store('laporan', 'public');
         }
+
+        // Store non-empty signatures only
+        if (empty($validated['signature_tech'])) unset($validated['signature_tech']);
+        if (empty($validated['signature_cust'])) unset($validated['signature_cust']);
 
         Report::create($validated);
 
@@ -71,16 +78,25 @@ class LaporanController extends Controller
 
     public function edit(Report $laporan)
     {
+        abort_if(
+            Auth::id() !== $laporan->user_id && !Auth::user()->hasAnyRole(['admin', 'sales']),
+            403
+        );
         $tasks = Task::where('assigned_to', Auth::id())->with('customer')->get();
         return view('laporan.edit', compact('laporan', 'tasks'));
     }
 
     public function update(Request $request, Report $laporan)
     {
+        abort_if(
+            Auth::id() !== $laporan->user_id && !Auth::user()->hasAnyRole(['admin', 'sales']),
+            403
+        );
+
         $validated = $request->validate([
             'description' => 'required|string',
             'status'      => 'required|in:draft,submitted,approved',
-            'photo'       => 'nullable|image|max:2048',
+            'photo'       => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
         ]);
 
         if ($request->hasFile('photo')) {
@@ -94,7 +110,19 @@ class LaporanController extends Controller
 
     public function destroy(Report $laporan)
     {
+        abort_if(
+            Auth::id() !== $laporan->user_id && !Auth::user()->hasAnyRole(['admin', 'sales']),
+            403
+        );
         $laporan->delete();
         return redirect()->route('laporan.index')->with('success', 'Laporan berhasil dihapus.');
+    }
+
+    public function pdf(Report $laporan)
+    {
+        $laporan->load(['task.customer', 'teknisi']);
+        $pdf = Pdf::loadView('laporan.pdf', compact('laporan'))->setPaper('A4', 'portrait');
+        $filename = 'laporan-' . $laporan->id . '-' . now()->format('Ymd') . '.pdf';
+        return $pdf->download($filename);
     }
 }

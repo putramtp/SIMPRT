@@ -1,14 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.public')
+
+@php $pageTitle = $customer->name . ' — Laporan | SIPRT'; @endphp
 
 @section('content')
-
-<div class="pwa-breadcrumb d-none d-sm-flex no-print">
-    <a href="{{ route('customers.index') }}">Customer</a>
-    <i class="ti ti-chevron-right"></i>
-    <span>{{ $customer->name }}</span>
-    <i class="ti ti-chevron-right"></i>
-    <span>Laporan</span>
-</div>
 
 {{-- Customer header --}}
 <div class="cust-header">
@@ -35,12 +29,6 @@
             <button onclick="window.print()" class="report-hero-pill">
                 <i class="ti ti-printer"></i> Cetak
             </button>
-            <a href="{{ route('customers.show', $customer) }}" class="report-hero-pill">
-                <i class="ti ti-user"></i> Profil
-            </a>
-            <button class="report-hero-pill" data-bs-toggle="modal" data-bs-target="#shareModal">
-                <i class="ti ti-share"></i> Bagikan
-            </button>
         </div>
     </div>
 </div>
@@ -49,15 +37,9 @@
 <div style="text-align:center;padding:3rem 1rem;color:var(--text-secondary);">
     <i class="ti ti-file-off" style="font-size:3rem;opacity:.2;display:block;margin-bottom:.75rem;"></i>
     <p style="font-size:.9rem;">Belum ada laporan untuk customer ini.</p>
-    @can('create customers')
-    <a href="{{ route('tugas.create') }}" class="btn btn-primary btn-sm">
-        <i class="ti ti-plus me-1"></i>Buat Tugas Baru
-    </a>
-    @endcan
 </div>
 @else
 
-{{-- Report cards grid --}}
 <div class="cust-report-grid">
     @foreach($reports as $report)
     <div class="cust-report-card"
@@ -68,10 +50,8 @@
          data-date="{{ $report->created_at->format('d M Y, H:i') }}"
          data-status="{{ $report->status }}"
          data-desc="{{ e($report->description) }}"
-         data-photo="{{ $report->photo ? asset('storage/' . $report->photo) : '' }}"
-         data-detail-url="{{ route('laporan.show', $report) }}">
+         data-photo="{{ $report->photo ? asset('storage/' . $report->photo) : '' }}">
 
-        {{-- Thumb --}}
         <div class="cust-report-thumb">
             @if($report->photo)
                 <img src="{{ asset('storage/' . $report->photo) }}" alt="Foto Laporan">
@@ -80,7 +60,6 @@
             @endif
         </div>
 
-        {{-- Body --}}
         <div class="cust-report-card-body">
             <div class="cust-report-card-title">{{ $report->task?->title ?? '-' }}</div>
             <div class="cust-report-card-sub">
@@ -89,7 +68,6 @@
             <div class="cust-report-card-desc">{{ $report->description }}</div>
         </div>
 
-        {{-- Footer --}}
         <div class="cust-report-card-footer">
             <span>{{ $report->created_at->format('d M Y') }}</span>
             <span class="report-status-pill {{ $report->status }}" style="font-size:.65rem;padding:2px 8px;">
@@ -102,39 +80,7 @@
 
 @endif
 
-{{-- Share link modal --}}
-<div class="modal fade" id="shareModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content" style="border-radius:var(--radius-lg);border:1px solid var(--border);">
-            <div class="modal-header" style="border-bottom:1px solid var(--border-light);">
-                <h6 class="modal-title" style="font-weight:700;color:var(--text);">
-                    <i class="ti ti-share me-2" style="color:var(--blue);"></i>Bagikan Laporan Customer
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p style="font-size:.82rem;color:var(--text-secondary);margin-bottom:.75rem;">
-                    Link berikut memberi akses baca kepada customer selama <strong>30 hari</strong>.
-                    Setelah itu link otomatis kadaluarsa.
-                </p>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="shareUrlInput"
-                           value="{{ $signedUrl }}" readonly
-                           style="font-size:.75rem;border-radius:var(--radius-md) 0 0 var(--radius-md);border-color:var(--border);">
-                    <button class="btn btn-primary" id="copyShareBtn" type="button"
-                            style="border-radius:0 var(--radius-md) var(--radius-md) 0;">
-                        <i class="ti ti-copy me-1"></i>Salin
-                    </button>
-                </div>
-                <div id="copyFeedback" style="font-size:.75rem;color:var(--green);margin-top:.4rem;display:none;">
-                    <i class="ti ti-check"></i> Link disalin!
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{{-- Report detail modal --}}
+{{-- Report detail modal (no "Lihat Detail Penuh" in public view) --}}
 <div class="rmodal-overlay" id="rModalOverlay" onclick="closeModal()">
     <div class="rmodal" onclick="event.stopPropagation()">
         <div class="rmodal-header">
@@ -168,9 +114,6 @@
         </div>
         <div class="rmodal-footer">
             <button onclick="closeModal()" class="btn btn-outline-secondary btn-sm no-print">Tutup</button>
-            <a id="rModalDetailLink" href="#" class="btn btn-primary btn-sm">
-                <i class="ti ti-external-link me-1"></i>Lihat Detail Penuh
-            </a>
         </div>
     </div>
 </div>
@@ -186,24 +129,9 @@
 @section('js')
 <script>
 $(function () {
-    /* Copy share link */
-    $('#copyShareBtn').on('click', function () {
-        var url = $('#shareUrlInput').val();
-        if (navigator.clipboard) {
-            navigator.clipboard.writeText(url).then(function () {
-                $('#copyFeedback').fadeIn(150).delay(2000).fadeOut(300);
-            });
-        } else {
-            $('#shareUrlInput').select();
-            document.execCommand('copy');
-            $('#copyFeedback').fadeIn(150).delay(2000).fadeOut(300);
-        }
-    });
-
     var statusLabels = { submitted: 'Terkirim', approved: 'Disetujui' };
     var statusClass  = { submitted: 'submitted', approved: 'approved' };
 
-    /* Open report modal */
     $(document).on('click', '.cust-report-card', function () {
         var $c = $(this);
         $('#rModalTitle').text($c.data('task'));
@@ -211,7 +139,6 @@ $(function () {
         $('#rModalTech').text($c.data('tech'));
         $('#rModalDate').text($c.data('date'));
         $('#rModalDesc').text($c.data('desc'));
-        $('#rModalDetailLink').attr('href', $c.data('detail-url'));
 
         var st = $c.data('status');
         $('#rModalStatus').html(
@@ -230,9 +157,8 @@ $(function () {
         document.body.style.overflow = 'hidden';
     });
 
-    /* Photo click in modal → lightbox */
     $('#rModalPhoto').on('click', function () {
-        openLightbox($('#rModalPhotoImg').attr('src'), $('#rModalTitle').text());
+        openLightbox($('#rModalPhotoImg').attr('src'));
     });
 });
 
@@ -241,7 +167,7 @@ function closeModal() {
     document.body.style.overflow = '';
 }
 
-function openLightbox(src, caption) {
+function openLightbox(src) {
     document.getElementById('lightboxImg').src = src;
     document.getElementById('lightbox').classList.add('open');
     document.body.style.overflow = 'hidden';
