@@ -21,6 +21,18 @@ class DummyDataSeeder extends Seeder
         );
         $admin->syncRoles(['admin']);
 
+        $sales = User::firstOrCreate(
+            ['email' => 'sales@siprt.com'],
+            ['name' => 'Sales User', 'password' => Hash::make('password')]
+        );
+        $sales->syncRoles(['sales']);
+
+        $teknisi = User::firstOrCreate(
+            ['email' => 'teknisi@siprt.com'],
+            ['name' => 'Technician User', 'password' => Hash::make('password')]
+        );
+        $teknisi->syncRoles(['teknisi']);
+
         // 2 sales users
         $salesUsers = User::factory(2)->create()->each(function ($user) {
             $user->assignRole('sales');

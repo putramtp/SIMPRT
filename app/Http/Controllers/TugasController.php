@@ -74,20 +74,20 @@ class TugasController extends Controller
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil dibuat.');
     }
 
-    public function show(Task $tuga)
+    public function show(Task $tugas)
     {
-        $tuga->load(['customer', 'assignee', 'reports.teknisi']);
-        return view('tugas.show', ['task' => $tuga]);
+        $tugas->load(['customer', 'assignee', 'reports.teknisi']);
+        return view('tugas.show', ['task' => $tugas]);
     }
 
-    public function edit(Task $tuga)
+    public function edit(Task $tugas)
     {
         $customers = Customer::orderBy('name')->get();
         $teknisi   = User::role('teknisi')->orderBy('name')->get();
-        return view('tugas.edit', ['task' => $tuga, 'customers' => $customers, 'teknisi' => $teknisi]);
+        return view('tugas.edit', ['task' => $tugas, 'customers' => $customers, 'teknisi' => $teknisi]);
     }
 
-    public function update(Request $request, Task $tuga)
+    public function update(Request $request, Task $tugas)
     {
         $validated = $request->validate([
             'title'       => 'required|string|max:255',
@@ -98,14 +98,14 @@ class TugasController extends Controller
             'due_date'    => 'nullable|date',
         ]);
 
-        $tuga->update($validated);
+        $tugas->update($validated);
 
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil diperbarui.');
     }
 
-    public function destroy(Task $tuga)
+    public function destroy(Task $tugas)
     {
-        $tuga->delete();
+        $tugas->delete();
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil dihapus.');
     }
 }
