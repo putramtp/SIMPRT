@@ -1,7 +1,28 @@
 # SIPRT — Development Progress
 
 **Stack:** Laravel 10 · PHP 8.1 · MySQL (`db_siprt`) · Bootstrap 5 CDN · jQuery 3.7.1 CDN · Yajra DataTables · Spatie Permission v6
-**Last updated:** 2026-05-14 — **All 5 phases complete. Ready for deployment.**
+**Last updated:** 2026-05-15 — **All 5 phases complete. Post-launch fixes & features in progress.**
+
+---
+
+## Recent Changes (2026-05-15)
+
+| File | Change | Type |
+|---|---|---|
+| `TugasController.php` | Renamed route model binding param `$tuga` → `$tugas` in `show`, `edit`, `update`, `destroy` | 🔴 Bug fix |
+| `DummyDataSeeder.php` | Added fixed `sales@siprt.com` and `teknisi@siprt.com` accounts (password: `password`) | ✅ Enhancement |
+| `tugas/show.blade.php` | Added `?? "-"` null-safe guards on `customer->name` and `assignee->name` | 🔴 Bug fix |
+| `HomeController.php` | Role-based post-login redirect: teknisi → `dashboard.teknisi`, admin/sales → `dashboard.sales` | 🔴 Bug fix |
+| `LaporanController.php` | `edit()` task dropdown: admin/sales load all tasks; teknisi load only their assigned tasks | 🔴 Bug fix |
+| `RolePermissionSeeder.php` | Removed `view customers` permission from teknisi — customer list now hidden from them | 🔴 Bug fix |
+| `users` migration | Added `signature` (longText nullable) column | ✅ Feature |
+| `User.php` | Added `signature` to `$fillable` | ✅ Feature |
+| `EnsureUserHasSignature.php` | New middleware — redirects teknisi without a saved signature to setup page | ✅ Feature |
+| `Kernel.php` | Registered `signature.required` middleware alias | ✅ Feature |
+| `ProfileController.php` | New — `showSignatureSetup()` + `storeSignature()` | ✅ Feature |
+| `profile/signature.blade.php` | New — one-time signature setup page (updatable anytime) | ✅ Feature |
+| `routes/web.php` | Profile signature routes + `signature.required` applied to all feature routes | ✅ Feature |
+| `laporan/create.blade.php` | SigPad accepts `initialSig`; teknisi signature pre-loaded from `users.signature` | ✅ Feature |
 
 ---
 
@@ -10,29 +31,17 @@
 ### Priority order
 
 ```
-1. Fix laporan/edit task query bug  →  2. Smoke test all 3 roles  →  3. Deploy  →  4. Wire up mail  →  5. Decide on template rendering
+1. Smoke test all 3 roles  →  2. Deploy  →  3. Wire up mail  →  4. Decide on template rendering
 ```
 
-### 1. Fix known bug — `laporan/edit` task dropdown empty for admin/sales (15 min)
-
-`LaporanController@edit` queries tasks with `where('assigned_to', Auth::id())`. When an admin or sales user edits a report, that filter returns nothing because they are not the assigned technician.
-
-**Fix:** remove the ownership filter and load all tasks instead:
-```php
-// LaporanController@edit — replace:
-$tasks = Task::where('assigned_to', Auth::id())->with('customer')->get();
-// with:
-$tasks = Task::with('customer')->get();
-```
-
-### 2. Manual smoke test before real users (30 min)
+### 1. Manual smoke test before real users (30 min)
 
 Walk through each role end-to-end:
-- **Sales:** create customer → create task → assign teknisi → open customer signed link → copy share URL → verify it opens without login
-- **Teknisi:** see task in dashboard → submit report with photo + signature → view report → download PDF
+- **Sales:** create customer → create task → assign teknisi → open customer signed link → verify it opens without login
+- **Teknisi:** first login → signature setup page → draw signature → redirected to dashboard → see only own tasks → submit report → signature auto-filled → view report → download PDF
 - **Admin:** edit a user's role → edit someone else's laporan → delete a task
 
-### 3. Deploy
+### 2. Deploy
 
 Minimum viable deployment:
 1. Set `APP_ENV=production`, `APP_DEBUG=false`, `APP_URL=https://yourdomain.com` in `.env`
@@ -46,7 +55,7 @@ Hosting options (cheapest → managed):
 - **Laravel Forge** — provisions and deploys automatically from Git
 - **Railway / Render** — push-to-deploy, free tier available
 
-### 4. Configure mail
+### 3. Configure mail
 
 Password reset is broken without mail. Add to `.env`:
 ```env
@@ -61,7 +70,7 @@ MAIL_FROM_NAME=SIPRT
 
 **Bonus:** add email notification when a task is assigned — teknisi will miss tasks if Pusher isn't open.
 
-### 5. Wire templates to the report form (medium effort)
+### 4. Wire templates to the report form (medium effort)
 
 The template builder saves field definitions to the `templates` table, but `laporan/create.blade.php` never loads them — teknisi still sees the plain form. If templates are core to the workflow, this needs to be built before launch.
 
@@ -77,14 +86,16 @@ Rough approach:
 
 | Issue | Severity | Notes |
 |---|---|---|
-| `laporan/edit` task dropdown empty for admin/sales | 🔴 Bug | Fix in `LaporanController@edit` — see above |
+| `TugasController` route model binding `$tuga` vs `$tugas` | ✅ Fixed 2026-05-15 | Was silently breaking `show`, `edit`, `update`, `destroy` |
+| `laporan/edit` task dropdown empty for admin/sales | ✅ Fixed 2026-05-15 | Admin/sales load all tasks; teknisi load only their own |
+| Teknisi redirected to sales dashboard on login | ✅ Fixed 2026-05-15 | `HomeController` now does role-based redirect |
+| Teknisi could see customer list | ✅ Fixed 2026-05-15 | Removed `view customers` permission from teknisi role |
+| No user signature on reports | ✅ Fixed 2026-05-15 | One-time setup on first login; auto-filled in report form |
 | Templates not rendered in laporan form | 🟠 Feature gap | Saved to DB but never loaded for teknisi |
 | No email on task assignment | 🟡 UX | Pusher only works when app is open |
 | No formal report approval workflow | 🟡 UX | `approved` status exists but no UI to trigger it |
 | Photos lost on redeploy | 🟡 Ops | Move to S3/Cloudflare R2 for production |
 | API login not rate-limited | 🟡 Security | Add `throttle:5,1` to `POST /api/auth/login` |
-
----
 
 ---
 
@@ -106,10 +117,11 @@ Rough approach:
 ### Auth & RBAC
 - Roles: `admin`, `sales`, `teknisi`
 - Spatie middleware: `role:admin|sales`, `role:teknisi`, `can:view users`, `can:view customers`
-- Fixed admin: `admin@siprt.com` / `password`
+- Fixed accounts: `admin@siprt.com`, `sales@siprt.com`, `teknisi@siprt.com` — all use `password`
+- Teknisi: redirected to `dashboard.teknisi` on login; blocked from customer list; must set signature on first login
 
 ### Database (all migrated)
-`users` · `customers` · `tasks` · `reports` (+ `signature_tech/cust`) · `technicians` · `templates` · `push_subscriptions` · Spatie RBAC tables · `personal_access_tokens`
+`users` (+ `signature`) · `customers` · `tasks` · `reports` (+ `signature_tech/cust`) · `technicians` · `templates` · `push_subscriptions` · Spatie RBAC tables · `personal_access_tokens`
 
 ### Controllers
 | Controller | Notes |
@@ -120,6 +132,7 @@ Rough approach:
 | `CustomerController` | Full CRUD; `laporan()` with 30-day `temporarySignedRoute`; `publicLaporan()` (no auth) |
 | `UserController` | Full CRUD; `can:view users` gate |
 | `TemplateController` | JSON store/show/destroy; `role:admin|sales` for write ops |
+| `ProfileController` | `showSignatureSetup()`, `storeSignature()` — one-time signature setup |
 | `Api/AuthController` | `login` (returns token), `logout`, `me` |
 | `Api/TaskController` | `index` (teknisi filtered), `show` |
 | `Api/ReportController` | `index`, `show`, `store` (base64 photo); `role:teknisi` |
@@ -128,15 +141,21 @@ Rough approach:
 | View | Features |
 |---|---|
 | `dashboard/sales.blade.php` | KPI cards, DataTables tasks, desktop right panel |
-| `dashboard/teknisi.blade.php` | Task list + JS detail panel |
+| `dashboard/teknisi.blade.php` | Own task list + JS detail panel |
 | `tugas/create.blade.php` | SplitPane, live summary card |
-| `laporan/create.blade.php` | SplitPane, drag-drop, dual signature canvas, offline background sync |
+| `laporan/create.blade.php` | SplitPane, drag-drop, dual signature canvas (tech pre-filled), offline sync |
 | `laporan/show.blade.php` | Magazine layout, lightbox, Download PDF, print |
 | `laporan/customer.blade.php` | Card grid, detail modal, signed-URL share modal |
 | `laporan/customer_public.blade.php` | Public layout (no auth), read-only |
 | `laporan/pdf.blade.php` | dompdf A4 template |
 | `template/index.blade.php` | 3-col builder (palette / canvas / property panel), DB save/load/delete |
+| `profile/signature.blade.php` | One-time signature setup; signature auto-used in all reports |
 | `offline.blade.php` | Standalone, no auth |
+
+### Middleware
+| Alias | Class | Purpose |
+|---|---|---|
+| `signature.required` | `EnsureUserHasSignature` | Redirect teknisi without saved signature to setup page |
 
 ### PWA
 - `public/favicon/site.webmanifest` — display: standalone, shortcuts
