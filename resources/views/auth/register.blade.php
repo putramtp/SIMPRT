@@ -17,10 +17,7 @@
 
         {{-- Brand --}}
         <div class="login-brand">
-            <div class="login-brand-icon">
-                <i class="bi bi-hexagon-fill"></i>
-            </div>
-            <span class="login-brand-name">{{ config('app.name', 'AppName') }}</span>
+            <img src="{{ asset('favicon/SIPRT.png') }}" alt="{{ config('app.name', 'SIPRT') }}" class="login-brand-logo" height="40" width="auto">
         </div>
 
         {{-- Heading --}}

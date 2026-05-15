@@ -1,47 +1,74 @@
 @extends('layouts.app')
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+@endsection
+
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Reset Password') }}</div>
+{{-- Animated background --}}
+<div class="login-bg">
+    <div class="login-grid"></div>
+    <div class="login-bg-orb"></div>
+</div>
 
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
+{{-- Page wrapper --}}
+<div class="login-wrapper">
+    <div class="login-card">
 
-                    <form method="POST" action="{{ route('password.email') }}">
-                        @csrf
-
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" autofocus>
-
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Send Password Reset Link') }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
+        {{-- Brand --}}
+        <div class="login-brand">
+            <img src="{{ asset('favicon/SIPRT.png') }}" alt="{{ config('app.name', 'SIPRT') }}" class="login-brand-logo" height="40" width="auto">
         </div>
+
+        {{-- Heading --}}
+        <h1 class="login-title">{{ __('Forgot Password?') }}</h1>
+        <p class="login-subtitle">{{ __("Enter your email and we'll send you a reset link") }}</p>
+
+        {{-- Status message --}}
+        @if (session('status'))
+            <div class="login-alert-success">
+                <i class="bi bi-check-circle-fill"></i>
+                {{ session('status') }}
+            </div>
+        @endif
+
+        {{-- Form --}}
+        <form method="POST" action="{{ route('password.email') }}" novalidate>
+            @csrf
+
+            <div class="login-field">
+                <label for="email" class="login-label">{{ __('Email Address') }}</label>
+                <input
+                    id="email"
+                    type="email"
+                    class="login-input @error('email') is-invalid @enderror"
+                    name="email"
+                    value="{{ old('email') }}"
+                    required
+                    autocomplete="email"
+                    autofocus
+                    placeholder="you@example.com"
+                >
+                @error('email')
+                    <div class="login-invalid-feedback">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        {{ $message }}
+                    </div>
+                @enderror
+            </div>
+
+            <button type="submit" class="login-btn">
+                {{ __('Send Reset Link') }}
+                <i class="bi bi-send ms-2"></i>
+            </button>
+        </form>
+
+        <p class="login-footer">
+            <a href="{{ route('login') }}">
+                <i class="bi bi-arrow-left me-1"></i>{{ __('Back to Sign In') }}
+            </a>
+        </p>
+
     </div>
 </div>
 @endsection

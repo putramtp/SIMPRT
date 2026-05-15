@@ -1,65 +1,143 @@
 @extends('layouts.app')
 
+@section('css')
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+@endsection
+
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">{{ __('Reset Password') }}</div>
+{{-- Animated background --}}
+<div class="login-bg">
+    <div class="login-grid"></div>
+    <div class="login-bg-orb"></div>
+</div>
 
-                <div class="card-body">
-                    <form method="POST" action="{{ route('password.update') }}">
-                        @csrf
+{{-- Page wrapper --}}
+<div class="login-wrapper">
+    <div class="login-card">
 
-                        <input type="hidden" name="token" value="{{ $token }}">
+        {{-- Brand --}}
+        <div class="login-brand">
+            <img src="{{ asset('favicon/SIPRT.png') }}" alt="{{ config('app.name', 'SIPRT') }}" class="login-brand-logo" height="40" width="auto">
+        </div>
 
-                        <div class="row mb-3">
-                            <label for="email" class="col-md-4 col-form-label text-md-end">{{ __('Email Address') }}</label>
+        {{-- Heading --}}
+        <h1 class="login-title">{{ __('Reset Password') }}</h1>
+        <p class="login-subtitle">{{ __('Enter your new password below') }}</p>
 
-                            <div class="col-md-6">
-                                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ $email ?? old('email') }}" required autocomplete="email" autofocus>
+        {{-- Form --}}
+        <form method="POST" action="{{ route('password.update') }}" novalidate>
+            @csrf
+            <input type="hidden" name="token" value="{{ $token }}">
 
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
+            {{-- Email --}}
+            <div class="login-field">
+                <label for="email" class="login-label">{{ __('Email Address') }}</label>
+                <input
+                    id="email"
+                    type="email"
+                    class="login-input @error('email') is-invalid @enderror"
+                    name="email"
+                    value="{{ $email ?? old('email') }}"
+                    required
+                    autocomplete="email"
+                    autofocus
+                    placeholder="you@example.com"
+                >
+                @error('email')
+                    <div class="login-invalid-feedback">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        {{ $message }}
+                    </div>
+                @enderror
+            </div>
 
-                        <div class="row mb-3">
-                            <label for="password" class="col-md-4 col-form-label text-md-end">{{ __('Password') }}</label>
+            {{-- New Password --}}
+            <div class="login-field">
+                <label for="password" class="login-label">{{ __('New Password') }}</label>
+                <div class="input-eye-wrap">
+                    <input
+                        id="password"
+                        type="password"
+                        class="login-input @error('password') is-invalid @enderror"
+                        name="password"
+                        required
+                        autocomplete="new-password"
+                        placeholder="••••••••"
+                    >
+                    <button
+                        type="button"
+                        class="input-eye-btn"
+                        id="togglePassword"
+                        aria-label="{{ __('Toggle password visibility') }}"
+                    >
+                        <i class="bi bi-eye" id="eyeIcon"></i>
+                    </button>
+                </div>
+                @error('password')
+                    <div class="login-invalid-feedback">
+                        <i class="bi bi-exclamation-circle-fill"></i>
+                        {{ $message }}
+                    </div>
+                @enderror
+            </div>
 
-                            <div class="col-md-6">
-                                <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
-
-                                @error('password')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row mb-3">
-                            <label for="password-confirm" class="col-md-4 col-form-label text-md-end">{{ __('Confirm Password') }}</label>
-
-                            <div class="col-md-6">
-                                <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="new-password">
-                            </div>
-                        </div>
-
-                        <div class="row mb-0">
-                            <div class="col-md-6 offset-md-4">
-                                <button type="submit" class="btn btn-primary">
-                                    {{ __('Reset Password') }}
-                                </button>
-                            </div>
-                        </div>
-                    </form>
+            {{-- Confirm Password --}}
+            <div class="login-field">
+                <label for="password-confirm" class="login-label">{{ __('Confirm Password') }}</label>
+                <div class="input-eye-wrap">
+                    <input
+                        id="password-confirm"
+                        type="password"
+                        class="login-input"
+                        name="password_confirmation"
+                        required
+                        autocomplete="new-password"
+                        placeholder="••••••••"
+                    >
+                    <button
+                        type="button"
+                        class="input-eye-btn"
+                        id="toggleConfirm"
+                        aria-label="{{ __('Toggle confirm password visibility') }}"
+                    >
+                        <i class="bi bi-eye" id="eyeIconConfirm"></i>
+                    </button>
                 </div>
             </div>
-        </div>
+
+            {{-- Submit --}}
+            <button type="submit" class="login-btn">
+                {{ __('Reset Password') }}
+                <i class="bi bi-arrow-right ms-2"></i>
+            </button>
+        </form>
+
+        <p class="login-footer">
+            <a href="{{ route('login') }}">
+                <i class="bi bi-arrow-left me-1"></i>{{ __('Back to Sign In') }}
+            </a>
+        </p>
+
     </div>
 </div>
+@endsection
+
+@section('js')
+<script>
+    document.getElementById('togglePassword').addEventListener('click', function () {
+        const input = document.getElementById('password');
+        const icon  = document.getElementById('eyeIcon');
+        const show  = input.type === 'password';
+        input.type  = show ? 'text' : 'password';
+        icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+
+    document.getElementById('toggleConfirm').addEventListener('click', function () {
+        const input = document.getElementById('password-confirm');
+        const icon  = document.getElementById('eyeIconConfirm');
+        const show  = input.type === 'password';
+        input.type  = show ? 'text' : 'password';
+        icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+</script>
 @endsection

@@ -22,6 +22,7 @@ Route::get('/offline', fn() => view('offline'))->name('offline');
 
 // Public customer report access via signed URL (no auth required)
 Route::get('/c/{customer}/laporan', [CustomerController::class, 'publicLaporan'])
+    ->middleware('throttle:public-laporan')
     ->name('customers.public-laporan');
 
 Route::middleware('auth')->group(function () {
