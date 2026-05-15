@@ -23,6 +23,12 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('home');
+        $user = auth()->user();
+
+        if ($user->hasRole('teknisi')) {
+            return redirect()->route('dashboard.teknisi');
+        }
+
+        return redirect()->route('dashboard.sales');
     }
 }

@@ -41,7 +41,8 @@ class LaporanController extends Controller
             ->whereIn('status', ['pending', 'in_progress'])
             ->with('customer')
             ->get();
-        return view('laporan.create', compact('tasks'));
+        $userSignature = Auth::user()->signature;
+        return view('laporan.create', compact('tasks', 'userSignature'));
     }
 
     public function store(Request $request)
@@ -82,7 +83,9 @@ class LaporanController extends Controller
             Auth::id() !== $laporan->user_id && !Auth::user()->hasAnyRole(['admin', 'sales']),
             403
         );
-        $tasks = Task::where('assigned_to', Auth::id())->with('customer')->get();
+        $tasks = Auth::user()->hasAnyRole(['admin', 'sales'])
+            ? Task::with('customer')->get()
+            : Task::where('assigned_to', Auth::id())->with('customer')->get();
         return view('laporan.edit', compact('laporan', 'tasks'));
     }
 

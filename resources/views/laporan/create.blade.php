@@ -316,7 +316,7 @@ $(function () {
     /* ══════════════════════════════
        SIGNATURE PADS
     ══════════════════════════════ */
-    function SigPad(canvasId, hiddenId, wrapId, emptyId, statusId, clearBtnId) {
+    function SigPad(canvasId, hiddenId, wrapId, emptyId, statusId, clearBtnId, initialSig) {
         var canvas  = document.getElementById(canvasId);
         var ctx     = canvas.getContext('2d');
         var drawing = false;
@@ -338,6 +338,22 @@ $(function () {
             ctx.lineJoin    = 'round';
         }
         resize();
+
+        if (initialSig) {
+            var img = new Image();
+            img.onload = function() {
+                var ratio = window.devicePixelRatio || 1;
+                ctx.drawImage(img, 0, 0, canvas.width / ratio, canvas.height / ratio);
+                hasSig = true;
+                $wrap.addClass('has-sig');
+                $empty.hide();
+                $status.html('<i class="ti ti-check" style="color:var(--green);"></i> <span style="color:var(--green);">Ditandatangani</span>').addClass('signed');
+                $hidden.val(initialSig);
+                syncPreview();
+            };
+            img.src = initialSig;
+        }
+
         window.addEventListener('resize', resize);
 
         function getPos(e) {
@@ -394,7 +410,7 @@ $(function () {
         });
     }
 
-    SigPad('sigTechCanvas', 'h_sig_tech', 'sigTechWrap', 'sigTechEmpty', 'sigTechStatus', 'sigTechClear');
+    SigPad('sigTechCanvas', 'h_sig_tech', 'sigTechWrap', 'sigTechEmpty', 'sigTechStatus', 'sigTechClear', @json($userSignature ?? null));
     SigPad('sigCustCanvas', 'h_sig_cust', 'sigCustWrap', 'sigCustEmpty', 'sigCustStatus', 'sigCustClear');
 
     /* ══════════════════════════════

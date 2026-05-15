@@ -15,7 +15,9 @@
       "Bash(findstr /i \"gmp\")",
       "Bash(findstr *)",
       "Bash(Select-String *)",
-      "Bash(not exist *)"
+      "Bash(not exist *)",
+      "Bash(xargs grep -l \"processing\")",
+      "Bash(Select-Object Name)"
     ]
   },
   "enabledPlugins": {

@@ -29,6 +29,6 @@ class RolePermissionSeeder extends Seeder
         $sales->givePermissionTo([
             'view customers', 'create customers', 'edit customers', 'view customer reports',
         ]);
-        $teknisi->givePermissionTo(['view customers']);
+        $teknisi->givePermissionTo([]);
     }
 }

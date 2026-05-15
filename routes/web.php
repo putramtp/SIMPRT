@@ -4,6 +4,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TugasController;
 use App\Http\Controllers\UserController;
@@ -25,6 +26,12 @@ Route::get('/c/{customer}/laporan', [CustomerController::class, 'publicLaporan']
 
 Route::middleware('auth')->group(function () {
     Route::get('/home', [HomeController::class, 'index'])->name('home');
+
+    // Profile — signature setup (must be before signature.required middleware group)
+    Route::get('/profile/signature', [ProfileController::class, 'showSignatureSetup'])->name('profile.signature.show');
+    Route::post('/profile/signature', [ProfileController::class, 'storeSignature'])->name('profile.signature.store');
+
+    Route::middleware('signature.required')->group(function () {
 
     // Dashboards
     Route::get('/dashboard/sales', [DashboardController::class, 'sales'])->name('dashboard.sales');
@@ -72,4 +79,6 @@ Route::middleware('auth')->group(function () {
             ->middleware('can:view customer reports')
             ->name('customers.laporan');
     });
+
+    }); // end signature.required group
 });
