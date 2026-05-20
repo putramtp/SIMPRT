@@ -24,6 +24,7 @@ class User extends Authenticatable
         'email',
         'password',
         'signature',
+        'customer_id',
     ];
 
     /**
@@ -49,6 +50,11 @@ class User extends Authenticatable
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(new ResetPasswordNotification($token));
+    }
+
+    public function customer()
+    {
+        return $this->belongsTo(Customer::class);
     }
 
     public function tasks()

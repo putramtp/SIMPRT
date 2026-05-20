@@ -92,6 +92,9 @@
 @csrf
 <input type="hidden" name="signature_tech" id="h_sig_tech">
 <input type="hidden" name="signature_cust" id="h_sig_cust">
+@if(request('task_id'))
+<input type="hidden" name="task_id" value="{{ request('task_id') }}">
+@endif
 
 <div class="sp-layout">
 
@@ -109,12 +112,13 @@
                     <label class="form-label">Tugas <span class="text-danger">*</span></label>
                     <select name="task_id" id="f_task"
                             class="form-select @error('task_id') is-invalid @enderror"
+                            {{ request('task_id') ? 'disabled' : '' }}
                             required>
                         <option value="">-- Pilih Tugas --</option>
                         @foreach($tasks as $task)
                             <option value="{{ $task->id }}"
                                     data-customer="{{ e($task->customer->name) }}"
-                                    {{ old('task_id') == $task->id ? 'selected' : '' }}>
+                                    {{ (old('task_id') ?? request('task_id')) == $task->id ? 'selected' : '' }}>
                                 {{ $task->title }} — {{ $task->customer->name }}
                             </option>
                         @endforeach

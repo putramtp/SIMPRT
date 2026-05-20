@@ -59,6 +59,23 @@
                     <label class="form-label">Deadline</label>
                     <input type="date" name="due_date" class="form-control" value="{{ old('due_date', $task->due_date?->format('Y-m-d')) }}">
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Prioritas</label>
+                    <select name="priority" class="form-select">
+                        @foreach(['low' => 'Rendah', 'normal' => 'Normal', 'high' => 'Tinggi', 'urgent' => 'Urgent'] as $val => $lbl)
+                            <option value="{{ $val }}" {{ old('priority', $task->priority ?? 'normal') === $val ? 'selected' : '' }}>{{ $lbl }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Template Laporan</label>
+                    <select name="template_id" class="form-select">
+                        <option value="">-- Tanpa Template --</option>
+                        @foreach($templates as $tpl)
+                            <option value="{{ $tpl->id }}" {{ old('template_id', $task->template_id) == $tpl->id ? 'selected' : '' }}>{{ $tpl->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <button type="submit" class="btn btn-primary">Perbarui</button>
             </form>
         </div>

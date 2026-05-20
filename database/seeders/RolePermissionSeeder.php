@@ -21,14 +21,16 @@ class RolePermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $perm, 'guard_name' => 'web']);
         }
 
-        $admin   = Role::firstOrCreate(['name' => 'admin']);
-        $sales   = Role::firstOrCreate(['name' => 'sales']);
-        $teknisi = Role::firstOrCreate(['name' => 'teknisi']);
+        $admin    = Role::firstOrCreate(['name' => 'admin']);
+        $sales    = Role::firstOrCreate(['name' => 'sales']);
+        $teknisi  = Role::firstOrCreate(['name' => 'teknisi']);
+        $customer = Role::firstOrCreate(['name' => 'customer']);
 
         $admin->givePermissionTo(Permission::all());
         $sales->givePermissionTo([
             'view customers', 'create customers', 'edit customers', 'view customer reports',
         ]);
         $teknisi->givePermissionTo([]);
+        $customer->givePermissionTo(['view customer reports']);
     }
 }

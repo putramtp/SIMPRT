@@ -12,7 +12,7 @@
 <script>
     // Redirect to the correct dashboard based on role
     @if(Auth::user()->hasRole('teknisi'))
-        window.location.replace("{{ route('dashboard.teknisi') }}");
+        window.location.replace("{{ route('dashboard.teknisi.my') }}");
     @else
         window.location.replace("{{ route('dashboard.sales') }}");
     @endif

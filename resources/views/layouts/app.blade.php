@@ -54,17 +54,32 @@
         </div>
 
         <nav class="sidebar-nav">
+            @if(Auth::user()->hasRole('customer'))
+            {{-- Customer: only their reports --}}
+            <a href="{{ route('dashboard.customer') }}"
+               class="nav-item {{ request()->routeIs('dashboard.customer') ? 'active' : '' }}">
+                <i class="ti ti-file-text"></i><span>Laporan Saya</span>
+            </a>
+
+            @else
+            {{-- Admin / Sales / Teknisi --}}
             @canany(['view users', 'create customers', 'edit customers'])
             <a href="{{ route('dashboard.sales') }}"
                class="nav-item {{ request()->routeIs('dashboard.sales') ? 'active' : '' }}">
                 <i class="ti ti-layout-dashboard"></i><span>Dashboard Sales</span>
             </a>
-            @endcanany
-
-            <a href="{{ route('dashboard.teknisi') }}"
-               class="nav-item {{ request()->routeIs('dashboard.teknisi') ? 'active' : '' }}">
+            <a href="{{ route('dashboard.teknisi.all') }}"
+               class="nav-item {{ request()->routeIs('dashboard.teknisi.all') ? 'active' : '' }}">
                 <i class="ti ti-tool"></i><span>Dashboard Teknisi</span>
             </a>
+            @endcanany
+
+            @if(Auth::user()->hasRole('teknisi'))
+            <a href="{{ route('dashboard.teknisi.my') }}"
+               class="nav-item {{ request()->routeIs('dashboard.teknisi.my') ? 'active' : '' }}">
+                <i class="ti ti-layout-dashboard"></i><span>Dashboard</span>
+            </a>
+            @endif
 
             @canany(['view users', 'create customers'])
             <a href="{{ route('tugas.index') }}"
@@ -95,6 +110,7 @@
                 <i class="ti ti-user-cog"></i><span>Manage User</span>
             </a>
             @endcan
+            @endif
         </nav>
 
         <div class="sidebar-footer">
@@ -159,6 +175,53 @@
     {{-- ── Bottom Navigation (mobile only) ── --}}
     <nav class="pwa-bottom-nav" id="bottomNav">
 
+        @if(Auth::user()->hasRole('customer'))
+        {{-- Customer: Beranda | Laporan | Keluar --}}
+        <a href="{{ route('dashboard.customer') }}"
+           class="pwa-bn-item {{ request()->routeIs('dashboard.customer') ? 'active' : '' }}">
+            <i class="ti ti-home"></i>
+            <span>Beranda</span>
+        </a>
+        <a href="{{ route('dashboard.customer') }}"
+           class="pwa-bn-item {{ request()->routeIs('laporan.*') ? 'active' : '' }}">
+            <i class="ti ti-file-text"></i>
+            <span>Laporan</span>
+        </a>
+        <button type="button" class="pwa-bn-item"
+                onclick="document.getElementById('custBnLogout').submit()"
+                style="background:none;border:none;width:100%;cursor:pointer;">
+            <i class="ti ti-logout"></i>
+            <span>Keluar</span>
+        </button>
+        <form id="custBnLogout" method="POST" action="{{ route('logout') }}" style="display:none;">@csrf</form>
+
+        @elseif(Auth::user()->hasRole('teknisi'))
+        {{-- Teknisi: Beranda | Tugas | Laporan | Keluar --}}
+        <a href="{{ route('dashboard.teknisi.my') }}"
+           class="pwa-bn-item {{ request()->routeIs('dashboard.teknisi.my') ? 'active' : '' }}">
+            <i class="ti ti-home"></i>
+            <span>Beranda</span>
+        </a>
+        <a href="{{ route('tugas.index') }}"
+           class="pwa-bn-item {{ request()->routeIs('tugas.*') ? 'active' : '' }}">
+            <i class="ti ti-clipboard-list"></i>
+            <span>Tugas</span>
+        </a>
+        <a href="{{ route('laporan.index') }}"
+           class="pwa-bn-item {{ request()->routeIs('laporan.*') && !request()->routeIs('customers.laporan') ? 'active' : '' }}">
+            <i class="ti ti-file-text"></i>
+            <span>Laporan</span>
+        </a>
+        <button type="button" class="pwa-bn-item"
+                onclick="document.getElementById('tekBnLogout').submit()"
+                style="background:none;border:none;width:100%;cursor:pointer;">
+            <i class="ti ti-logout"></i>
+            <span>Keluar</span>
+        </button>
+        <form id="tekBnLogout" method="POST" action="{{ route('logout') }}" style="display:none;">@csrf</form>
+
+        @else
+        {{-- Admin / Sales --}}
         @canany(['view users', 'create customers', 'edit customers'])
         <a href="{{ route('dashboard.sales') }}"
            class="pwa-bn-item {{ request()->routeIs('dashboard.sales') ? 'active' : '' }}">
@@ -166,14 +229,6 @@
             <span>Sales</span>
         </a>
         @endcanany
-
-        @if(Auth::user()->hasRole('teknisi'))
-        <a href="{{ route('dashboard.teknisi') }}"
-           class="pwa-bn-item {{ request()->routeIs('dashboard.teknisi') ? 'active' : '' }}">
-            <i class="ti ti-tool"></i>
-            <span>Dashboard</span>
-        </a>
-        @endif
 
         @canany(['view users', 'create customers'])
         <a href="{{ route('tugas.index') }}"
@@ -204,6 +259,7 @@
             <span>Users</span>
         </a>
         @endcan
+        @endif
 
     </nav>
 

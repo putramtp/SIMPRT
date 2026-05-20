@@ -1,0 +1,201 @@
+
+<div style="background: var(--color-background-secondary); padding: 16px; border-radius: var(--border-radius-lg); display: flex; flex-direction: column; align-items: center; gap: 12px; font-family: var(--font-sans);">
+
+  <div style="font-size: 13px; color: var(--color-text-secondary); font-weight: 500; letter-spacing: 0.05em;">MOCKUP 1 / 6 — DASHBOARD SALES</div>
+
+  <!-- Phone frame -->
+  <div style="width: 360px; border-radius: 24px; border: 1.5px solid var(--color-border-secondary); background: #f4f6fb; overflow: hidden;">
+
+    <!-- Status bar -->
+    <div style="background: #1565C0; padding: 10px 16px 8px; display: flex; justify-content: space-between; align-items: center;">
+      <span style="font-size: 12px; color: #fff; font-weight: 500;">09:41</span>
+      <div style="display: flex; gap: 6px; align-items: center;">
+        <i class="ti ti-wifi" style="font-size: 14px; color: #fff;" aria-hidden="true"></i>
+        <i class="ti ti-battery" style="font-size: 14px; color: #fff;" aria-hidden="true"></i>
+      </div>
+    </div>
+
+    <!-- Top Nav -->
+    <div style="background: #1565C0; padding: 12px 16px 16px; display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <div style="font-size: 11px; color: #90CAF9;">Selamat datang,</div>
+        <div style="font-size: 16px; font-weight: 500; color: #fff;">Budi Santoso</div>
+      </div>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <div style="position: relative;">
+          <i class="ti ti-bell" style="font-size: 22px; color: #fff;" aria-hidden="true"></i>
+          <div style="position: absolute; top: -2px; right: -2px; width: 8px; height: 8px; background: #FF6B35; border-radius: 50%;"></div>
+        </div>
+        <div style="width: 34px; height: 34px; border-radius: 50%; background: #42A5F5; display: flex; align-items: center; justify-content: center; font-weight: 500; font-size: 13px; color: #042C53;">BS</div>
+      </div>
+    </div>
+
+    <!-- Curved divider -->
+    <div style="background: #1565C0; height: 16px; border-radius: 0 0 20px 20px;"></div>
+
+    <!-- Body -->
+    <div style="padding: 12px 14px; display: flex; flex-direction: column; gap: 12px;">
+
+      <!-- Metric cards -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+        <div style="background: #fff; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); padding: 10px; text-align: center;">
+          <div style="font-size: 18px; font-weight: 500; color: #1565C0;">12</div>
+          <div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 2px;">Total Tugas</div>
+        </div>
+        <div style="background: #fff; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); padding: 10px; text-align: center;">
+          <div style="font-size: 18px; font-weight: 500; color: #2E7D32;">7</div>
+          <div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 2px;">Selesai</div>
+        </div>
+        <div style="background: #fff; border-radius: var(--border-radius-md); border: 0.5px solid var(--color-border-tertiary); padding: 10px; text-align: center;">
+          <div style="font-size: 18px; font-weight: 500; color: #E65100;">3</div>
+          <div style="font-size: 10px; color: var(--color-text-secondary); margin-top: 2px;">Pending</div>
+        </div>
+      </div>
+
+      <!-- Tombol buat tugas -->
+      <button onclick="sendPrompt('Tampilkan mockup Form Buat Tugas (halaman 2 dari 6)')" style="width: 100%; background: #1565C0; color: #fff; border: none; border-radius: var(--border-radius-md); padding: 11px; font-size: 14px; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+        <i class="ti ti-plus" style="font-size: 16px;" aria-hidden="true"></i>
+        Buat Tugas Baru ↗
+      </button>
+
+      <!-- Filter tabs -->
+      <div style="display: flex; gap: 6px; overflow-x: auto;">
+        <div style="background: #1565C0; color: #fff; border-radius: 20px; padding: 5px 12px; font-size: 12px; white-space: nowrap; font-weight: 500;">Semua</div>
+        <div style="background: #fff; color: var(--color-text-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: 20px; padding: 5px 12px; font-size: 12px; white-space: nowrap;">Aktif</div>
+        <div style="background: #fff; color: var(--color-text-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: 20px; padding: 5px 12px; font-size: 12px; white-space: nowrap;">Selesai</div>
+        <div style="background: #fff; color: var(--color-text-secondary); border: 0.5px solid var(--color-border-secondary); border-radius: 20px; padding: 5px 12px; font-size: 12px; white-space: nowrap;">Dibatalkan</div>
+      </div>
+
+      <!-- Section label -->
+      <div style="font-size: 13px; font-weight: 500; color: var(--color-text-primary);">Daftar Pekerjaan</div>
+
+      <!-- Task cards -->
+
+      <!-- Card 1 - On progress -->
+      <div style="background: #fff; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <div style="font-size: 13px; font-weight: 500; color: var(--color-text-primary);">Instalasi CCTV — PT Maju Jaya</div>
+          <span style="background: #E3F2FD; color: #0C447C; border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 500; white-space: nowrap;">Berlangsung</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+          <div style="width: 22px; height: 22px; border-radius: 50%; background: #E3F2FD; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 500; color: #0C447C;">AR</div>
+          <span style="font-size: 12px; color: var(--color-text-secondary);">Andi Rahmad</span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <i class="ti ti-calendar" style="font-size: 12px; color: var(--color-text-secondary);" aria-hidden="true"></i>
+            <span style="font-size: 11px; color: var(--color-text-secondary);">12 Mei 2026</span>
+          </div>
+          <div style="flex: 1; height: 4px; background: #E3F2FD; border-radius: 4px;">
+            <div style="width: 60%; height: 100%; background: #1565C0; border-radius: 4px;"></div>
+          </div>
+          <span style="font-size: 11px; color: #1565C0; font-weight: 500;">60%</span>
+        </div>
+      </div>
+
+      <!-- Card 2 - Menunggu -->
+      <div style="background: #fff; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <div style="font-size: 13px; font-weight: 500; color: var(--color-text-primary);">Servis AC — Gudang Blok B</div>
+          <span style="background: #FFF8E1; color: #633806; border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 500; white-space: nowrap;">Menunggu</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+          <div style="width: 22px; height: 22px; border-radius: 50%; background: #FFF8E1; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 500; color: #633806;">DK</div>
+          <span style="font-size: 12px; color: var(--color-text-secondary);">Doni Kusuma</span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <i class="ti ti-calendar" style="font-size: 12px; color: var(--color-text-secondary);" aria-hidden="true"></i>
+            <span style="font-size: 11px; color: var(--color-text-secondary);">14 Mei 2026</span>
+          </div>
+          <div style="flex: 1; height: 4px; background: #FFF8E1; border-radius: 4px;">
+            <div style="width: 0%; height: 100%; background: #E65100; border-radius: 4px;"></div>
+          </div>
+          <span style="font-size: 11px; color: var(--color-text-secondary); font-weight: 500;">0%</span>
+        </div>
+      </div>
+
+      <!-- Card 3 - Selesai -->
+      <div style="background: #fff; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <div style="font-size: 13px; font-weight: 500; color: var(--color-text-primary);">Perbaikan Panel Listrik</div>
+          <span style="background: #EAF3DE; color: #27500A; border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 500; white-space: nowrap;">Selesai</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+          <div style="width: 22px; height: 22px; border-radius: 50%; background: #EAF3DE; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 500; color: #27500A;">SW</div>
+          <span style="font-size: 12px; color: var(--color-text-secondary);">Sari Widodo</span>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <i class="ti ti-calendar" style="font-size: 12px; color: var(--color-text-secondary);" aria-hidden="true"></i>
+            <span style="font-size: 11px; color: var(--color-text-secondary);">10 Mei 2026</span>
+          </div>
+          <div style="flex: 1; height: 4px; background: #EAF3DE; border-radius: 4px;">
+            <div style="width: 100%; height: 100%; background: #2E7D32; border-radius: 4px;"></div>
+          </div>
+          <span style="font-size: 11px; color: #2E7D32; font-weight: 500;">100%</span>
+        </div>
+      </div>
+
+      <!-- Status Teknisi section -->
+      <div style="font-size: 13px; font-weight: 500; color: var(--color-text-primary); margin-top: 4px;">Status Teknisi</div>
+      <div style="background: #fff; border-radius: var(--border-radius-lg); border: 0.5px solid var(--color-border-tertiary); overflow: hidden;">
+        <div style="display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+          <div style="width: 28px; height: 28px; border-radius: 50%; background: #E3F2FD; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: #0C447C;">AR</div>
+          <div>
+            <div style="font-size: 12px; font-weight: 500; color: var(--color-text-primary);">Andi Rahmad</div>
+            <div style="font-size: 11px; color: var(--color-text-secondary);">1 tugas aktif</div>
+          </div>
+          <span style="background: #E3F2FD; color: #0C447C; border-radius: 20px; padding: 2px 8px; font-size: 10px;">Sibuk</span>
+        </div>
+        <div style="display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border-bottom: 0.5px solid var(--color-border-tertiary);">
+          <div style="width: 28px; height: 28px; border-radius: 50%; background: #EAF3DE; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: #27500A;">DK</div>
+          <div>
+            <div style="font-size: 12px; font-weight: 500; color: var(--color-text-primary);">Doni Kusuma</div>
+            <div style="font-size: 11px; color: var(--color-text-secondary);">Tidak ada tugas</div>
+          </div>
+          <span style="background: #EAF3DE; color: #27500A; border-radius: 20px; padding: 2px 8px; font-size: 10px;">Tersedia</span>
+        </div>
+        <div style="display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 12px;">
+          <div style="width: 28px; height: 28px; border-radius: 50%; background: #FFF8E1; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; color: #633806;">SW</div>
+          <div>
+            <div style="font-size: 12px; font-weight: 500; color: var(--color-text-primary);">Sari Widodo</div>
+            <div style="font-size: 11px; color: var(--color-text-secondary);">Off hari ini</div>
+          </div>
+          <span style="background: #F1EFE8; color: #444441; border-radius: 20px; padding: 2px 8px; font-size: 10px;">Tidak aktif</span>
+        </div>
+      </div>
+
+      <!-- spacer -->
+      <div style="height: 8px;"></div>
+
+    </div>
+
+    <!-- Bottom Nav -->
+    <div style="background: #fff; border-top: 0.5px solid var(--color-border-tertiary); padding: 8px 0 12px; display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; text-align: center;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <i class="ti ti-home" style="font-size: 20px; color: #1565C0;" aria-hidden="true"></i>
+        <span style="font-size: 10px; color: #1565C0; font-weight: 500;">Beranda</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <i class="ti ti-clipboard-list" style="font-size: 20px; color: var(--color-text-secondary);" aria-hidden="true"></i>
+        <span style="font-size: 10px; color: var(--color-text-secondary);">Tugas</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <i class="ti ti-file-description" style="font-size: 20px; color: var(--color-text-secondary);" aria-hidden="true"></i>
+        <span style="font-size: 10px; color: var(--color-text-secondary);">Laporan</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 3px;">
+        <i class="ti ti-settings" style="font-size: 20px; color: var(--color-text-secondary);" aria-hidden="true"></i>
+        <span style="font-size: 10px; color: var(--color-text-secondary);">Pengaturan</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Next button -->
+  <button onclick="sendPrompt('Lanjutkan ke mockup halaman 2: Form Buat Tugas')" style="width: 360px; background: var(--color-background-primary); border: 0.5px solid var(--color-border-secondary); border-radius: var(--border-radius-md); padding: 10px; font-size: 13px; color: var(--color-text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+    Lanjut ke Form Buat Tugas ↗
+  </button>
+
+</div>

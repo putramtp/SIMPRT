@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
@@ -37,23 +38,26 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles = Role::all();
-        return view('users.create', compact('roles'));
+        $roles     = Role::all();
+        $customers = Customer::orderBy('name')->get();
+        return view('users.create', compact('roles', 'customers'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users',
-            'password' => 'required|min:8|confirmed',
-            'role'     => 'required|exists:roles,name',
+            'name'        => 'required|string|max:255',
+            'email'       => 'required|email|unique:users',
+            'password'    => 'required|min:8|confirmed',
+            'role'        => 'required|exists:roles,name',
+            'customer_id' => 'nullable|exists:customers,id',
         ]);
 
         $user = User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
-            'password' => $validated['password'],
+            'name'        => $validated['name'],
+            'email'       => $validated['email'],
+            'password'    => $validated['password'],
+            'customer_id' => $validated['role'] === 'customer' ? ($validated['customer_id'] ?? null) : null,
         ]);
         $user->assignRole($validated['role']);
 
@@ -67,19 +71,25 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $roles = Role::all();
-        return view('users.edit', compact('user', 'roles'));
+        $roles     = Role::all();
+        $customers = Customer::orderBy('name')->get();
+        return view('users.edit', compact('user', 'roles', 'customers'));
     }
 
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name'  => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role'  => 'required|exists:roles,name',
+            'name'        => 'required|string|max:255',
+            'email'       => 'required|email|unique:users,email,' . $user->id,
+            'role'        => 'required|exists:roles,name',
+            'customer_id' => 'nullable|exists:customers,id',
         ]);
 
-        $user->update(['name' => $validated['name'], 'email' => $validated['email']]);
+        $user->update([
+            'name'        => $validated['name'],
+            'email'       => $validated['email'],
+            'customer_id' => $validated['role'] === 'customer' ? ($validated['customer_id'] ?? null) : null,
+        ]);
         $user->syncRoles([$validated['role']]);
 
         return redirect()->route('users.index')->with('success', 'User berhasil diperbarui.');

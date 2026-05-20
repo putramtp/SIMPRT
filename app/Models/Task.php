@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Template;
 
 class Task extends Model
 {
@@ -11,7 +12,7 @@ class Task extends Model
 
     protected $fillable = [
         'title', 'description', 'customer_id',
-        'assigned_to', 'created_by', 'status', 'due_date',
+        'assigned_to', 'created_by', 'status', 'due_date', 'priority', 'template_id',
     ];
 
     protected $casts = ['due_date' => 'date'];
@@ -29,6 +30,11 @@ class Task extends Model
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function template()
+    {
+        return $this->belongsTo(Template::class);
     }
 
     public function reports()

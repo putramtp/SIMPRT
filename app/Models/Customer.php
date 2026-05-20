@@ -11,6 +11,11 @@ class Customer extends Model
 
     protected $fillable = ['name', 'phone', 'email', 'address'];
 
+    public function user()
+    {
+        return $this->hasOne(User::class);
+    }
+
     public function tasks()
     {
         return $this->hasMany(Task::class);

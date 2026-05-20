@@ -1,9 +1,46 @@
 # SIPRT — Development Progress
 
 **Stack:** Laravel 10 · PHP 8.1 · MySQL (`db_siprt`) · Bootstrap 5 CDN · jQuery 3.7.1 CDN · Yajra DataTables · Spatie Permission v6
-**Last updated:** 2026-05-15 — **All 5 phases complete. Post-launch fixes & features in progress.**
+**Last updated:** 2026-05-18 — **All 5 phases complete. Post-launch fixes & features in progress.**
 
 ---
+
+## Recent Changes (2026-05-18) — Dashboard Teknisi split + charts
+
+| File | Change | Type |
+|---|---|---|
+| `dashboard/teknisi-all.blade.php` | Full rewrite — stat cards (total/pending/berjalan/selesai), doughnut status chart + stacked bar workload-per-teknisi chart (Chart.js 4.4 CDN), DataTables Ajax table (all tasks: judul/customer/teknisi/status/deadline/action) | ✅ Feature |
+| `dashboard/teknisi-my.blade.php` | New — PWA mobile-first card layout for teknisi's own tasks (split out from deleted `teknisi.blade.php`) | ✅ Feature |
+| `dashboard/teknisi.blade.php` | Deleted — replaced by the two views above | 🗑️ Removed |
+| `DashboardController.php` | Split `teknisi()` → `teknisiAll(Request $request)` (DataTables Ajax + chart aggregates) + `teknisiMy()` (own tasks only); added `DataTables` and `Request` imports | ✅ Feature |
+| `routes/web.php` | `dashboard.teknisi.all` (`role:admin\|sales`), `dashboard.teknisi.my` (`role:teknisi`) | ✅ Feature |
+| `CLAUDE.md` | Updated route table, mockup reference, CDN note for Chart.js, hex exception in CSS rule | 📝 Docs |
+
+## Recent Changes (2026-05-18)
+
+| File | Change | Type |
+|---|---|---|
+| `tugas/create.blade.php` | Template field preview fixed — was iterating sections as flat fields, causing `[object Object]` display | 🔴 Bug fix |
+| `routes/web.php` | Route ordering fix: `tugas/create` (GET) and `tugas` (POST) moved before `tugas/{tugas}` wildcard | 🔴 Bug fix |
+| `dashboard/teknisi.blade.php` | Full PWA rewrite — blue hero, 3-metric grid, task cards (color bar by status), Google Maps link, report history | ✅ Feature |
+| `tugas/create.blade.php` | Full PWA rewrite — 3-step form (Detail → Teknisi → Template) with priority toggle, teknisi availability cards, template preview with section grouping | ✅ Feature |
+| `tugas/edit.blade.php` | Added `priority` select and `template_id` select | ✅ Feature |
+| `dashboard/customer.blade.php` | New — customer-role dashboard: blue gradient hero, 4-metric strip, tappable report cards | ✅ Feature |
+| `DashboardController.php` | Added `customer()` method; `teknisi()` eager-loads `task.customer` | ✅ Feature |
+| `HomeController.php` | Added customer role redirect → `dashboard.customer` | ✅ Feature |
+| `routes/web.php` | Added `GET /dashboard/customer` (`role:customer`); added `role:admin|sales` guard on sales dashboard | ✅ Feature |
+| `RolePermissionSeeder.php` | Added `customer` role with `view customer reports` permission | ✅ Feature |
+| `DummyDataSeeder.php` | Added fixed `customer@siprt.com` account linked to PT Maju Jaya Abadi customer record | ✅ Feature |
+| `DummyDataSeeder.php` | Added 4 domain-specific template seeds: CCTV Standard, Jaringan LAN, Instalasi Access Point, Servis Perangkat Umum | ✅ Feature |
+| `TugasController.php` | `create()`, `edit()` now pass `$templates` and `$teknisi` with `active_tasks` count; `store()`, `update()` validate `priority` + `template_id` | ✅ Enhancement |
+| `UserController.php` | `create()`, `edit()` pass `$customers`; `store()`, `update()` set/clear `customer_id` based on role | ✅ Feature |
+| `users/create.blade.php`, `edit.blade.php` | Added customer dropdown that shows/hides via JS when role = "customer" | ✅ Feature |
+| `Task.php` | Added `priority`, `template_id` to `$fillable`; added `template()` belongsTo | ✅ Feature |
+| `User.php` | Added `customer_id` to `$fillable`; added `customer()` belongsTo | ✅ Feature |
+| `Customer.php` | Added `user()` hasOne | ✅ Feature |
+| `layouts/app.blade.php` | Sidebar: customer branch (Laporan only); bottom nav: 3-branch (customer / teknisi / admin-sales) | ✅ Feature |
+| `add_customer_id_to_users_table` migration | Nullable `customer_id` FK on users with `nullOnDelete` | ✅ Feature |
+| `add_priority_template_to_tasks_table` migration | `priority` enum (low/normal/high/urgent, default normal); nullable `template_id` FK | ✅ Feature |
 
 ## Recent Changes (2026-05-15)
 
@@ -91,7 +128,9 @@ Rough approach:
 | Teknisi redirected to sales dashboard on login | ✅ Fixed 2026-05-15 | `HomeController` now does role-based redirect |
 | Teknisi could see customer list | ✅ Fixed 2026-05-15 | Removed `view customers` permission from teknisi role |
 | No user signature on reports | ✅ Fixed 2026-05-15 | One-time setup on first login; auto-filled in report form |
-| Templates not rendered in laporan form | 🟠 Feature gap | Saved to DB but never loaded for teknisi |
+| Admin couldn't access `/tugas/create` | ✅ Fixed 2026-05-18 | Route wildcard `{tugas}` was swallowing the `/create` segment |
+| Template preview showed `[object Object]` | ✅ Fixed 2026-05-18 | `templateData[id]` is sections array; now flattened correctly |
+| Templates not rendered in laporan form | 🟠 Feature gap | Saved to DB but never loaded for teknisi when filling a report |
 | No email on task assignment | 🟡 UX | Pusher only works when app is open |
 | No formal report approval workflow | 🟡 UX | `approved` status exists but no UI to trigger it |
 | Photos lost on redeploy | 🟡 Ops | Move to S3/Cloudflare R2 for production |
@@ -115,22 +154,23 @@ Rough approach:
 ## What's Built
 
 ### Auth & RBAC
-- Roles: `admin`, `sales`, `teknisi`
-- Spatie middleware: `role:admin|sales`, `role:teknisi`, `can:view users`, `can:view customers`
-- Fixed accounts: `admin@siprt.com`, `sales@siprt.com`, `teknisi@siprt.com` — all use `password`
-- Teknisi: redirected to `dashboard.teknisi` on login; blocked from customer list; must set signature on first login
+- Roles: `admin`, `sales`, `teknisi`, `customer`
+- Spatie middleware: `role:admin|sales`, `role:teknisi`, `role:customer`, `can:view users`, `can:view customers`
+- Fixed accounts: `admin@siprt.com`, `sales@siprt.com`, `teknisi@siprt.com`, `customer@siprt.com` — all use `password`
+- Customer user account links to a `customers` record via `users.customer_id`; dashboard scoped to their own reports
+- Teknisi: redirected to `dashboard.teknisi.my` on login; blocked from customer list; must set signature on first login
 
 ### Database (all migrated)
-`users` (+ `signature`) · `customers` · `tasks` · `reports` (+ `signature_tech/cust`) · `technicians` · `templates` · `push_subscriptions` · Spatie RBAC tables · `personal_access_tokens`
+`users` (+ `signature`, `customer_id`) · `customers` · `tasks` (+ `priority`, `template_id`) · `reports` (+ `signature_tech/cust`) · `technicians` · `templates` · `push_subscriptions` · Spatie RBAC tables · `personal_access_tokens`
 
 ### Controllers
 | Controller | Notes |
 |---|---|
-| `DashboardController` | `sales()`, `teknisi()` — KPI stats, tech status |
-| `TugasController` | Full CRUD; `role:admin|sales` for create/edit/delete; Pusher dispatch on create |
+| `DashboardController` | `sales()`, `teknisiAll()` (DataTables Ajax + Chart.js chart data, admin/sales), `teknisiMy()` (own tasks, teknisi), `customer()` |
+| `TugasController` | Full CRUD; `role:admin|sales` for create/edit/delete; priority + template_id; Pusher dispatch on create |
 | `LaporanController` | Full CRUD; `role:teknisi` for create; ownership check on edit/update/destroy; PDF download |
 | `CustomerController` | Full CRUD; `laporan()` with 30-day `temporarySignedRoute`; `publicLaporan()` (no auth) |
-| `UserController` | Full CRUD; `can:view users` gate |
+| `UserController` | Full CRUD; `can:view users` gate; `customer_id` FK set when role=customer |
 | `TemplateController` | JSON store/show/destroy; `role:admin|sales` for write ops |
 | `ProfileController` | `showSignatureSetup()`, `storeSignature()` — one-time signature setup |
 | `Api/AuthController` | `login` (returns token), `logout`, `me` |
@@ -141,8 +181,11 @@ Rough approach:
 | View | Features |
 |---|---|
 | `dashboard/sales.blade.php` | KPI cards, DataTables tasks, desktop right panel |
-| `dashboard/teknisi.blade.php` | Own task list + JS detail panel |
-| `tugas/create.blade.php` | SplitPane, live summary card |
+| `dashboard/teknisi-all.blade.php` | Admin/sales — stat cards, doughnut status chart + stacked workload bar chart (Chart.js), DataTables Ajax (all tasks) |
+| `dashboard/teknisi-my.blade.php` | Teknisi PWA — blue hero, 3-metric grid, task cards (color bar by status), Maps link, report history |
+| `dashboard/customer.blade.php` | PWA — blue gradient hero, 4-metric strip, tappable report cards scoped to customer |
+| `tugas/create.blade.php` | PWA 3-step form — priority toggle, teknisi availability cards, template preview with section grouping |
+| `tugas/edit.blade.php` | Standard form with priority select + template select |
 | `laporan/create.blade.php` | SplitPane, drag-drop, dual signature canvas (tech pre-filled), offline sync |
 | `laporan/show.blade.php` | Magazine layout, lightbox, Download PDF, print |
 | `laporan/customer.blade.php` | Card grid, detail modal, signed-URL share modal |
@@ -150,7 +193,16 @@ Rough approach:
 | `laporan/pdf.blade.php` | dompdf A4 template |
 | `template/index.blade.php` | 3-col builder (palette / canvas / property panel), DB save/load/delete |
 | `profile/signature.blade.php` | One-time signature setup; signature auto-used in all reports |
+| `users/create.blade.php`, `edit.blade.php` | Customer dropdown (JS show/hide when role=customer) |
 | `offline.blade.php` | Standalone, no auth |
+
+### Seeded Templates (via DummyDataSeeder)
+| Template | Sections | Notable field types |
+|---|---|---|
+| Template CCTV Standard | Detail Pekerjaan · Checklist Instalasi · Material · Dokumentasi · Persetujuan | checkbox, photo ×2, signature ×2 |
+| Template Jaringan LAN | Kondisi Jaringan · Pekerjaan · Hasil Pengujian · Dokumentasi · Persetujuan | number, photo, signature ×2 |
+| Template Instalasi Access Point | Spesifikasi · Konfigurasi · Hasil Pengujian · Dokumentasi · Persetujuan | select (Channel/Keamanan/Sinyal), photo ×2, signature ×2 |
+| Template Servis Perangkat Umum | Identifikasi · Penanganan · Hasil Akhir · Persetujuan | date, select (Status Akhir), signature ×2 |
 
 ### Middleware
 | Alias | Class | Purpose |
@@ -196,7 +248,7 @@ POST   /api/reports          auth:sanctum + role:teknisi
 1. **No Vite / npm** — CDN + `public/css/public.css` / `public/css/public.js`
 2. **Single `#menuToggle` listener** — IIFE in `layouts/app.blade.php` only
 3. **DataTables Ajax** — `index()` returns JSON on Ajax, view on non-Ajax; always `addIndexColumn()` + `rawColumns()`
-4. **CSS tokens only** — never hardcode hex; use `--blue`, `--text`, etc.
+4. **CSS tokens only** — never hardcode hex in CSS/Blade styles; use `--blue`, `--text`, etc. Exception: Chart.js `backgroundColor` must use hex (`#1565C0` blue, `#FFA000` amber, `#388E3C` green, `#EF5350` red)
 5. **`auth()->user()->can()`** in controller action columns — not `@can` Blade
 6. **CDN order** — jQuery → Bootstrap JS → inline IIFE → DataTables → `public.js` → `@yield('js')`
 7. **Mobile-first** — base styles mobile, layer up with `@media (min-width: 640px)` / `@media (min-width: 1024px)`

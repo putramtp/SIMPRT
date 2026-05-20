@@ -35,16 +35,17 @@ Route::middleware('auth')->group(function () {
     Route::middleware('signature.required')->group(function () {
 
     // Dashboards
-    Route::get('/dashboard/sales', [DashboardController::class, 'sales'])->name('dashboard.sales');
-    Route::get('/dashboard/teknisi', [DashboardController::class, 'teknisi'])->name('dashboard.teknisi');
+    Route::get('/dashboard/sales', [DashboardController::class, 'sales'])->middleware('role:admin|sales')->name('dashboard.sales');
+    Route::get('/dashboard/teknisi/all', [DashboardController::class, 'teknisiAll'])->middleware('role:admin|sales|teknisi')->name('dashboard.teknisi.all');
+    Route::get('/dashboard/teknisi/my', [DashboardController::class, 'teknisiMy'])->middleware('role:teknisi')->name('dashboard.teknisi.my');
+    Route::get('/dashboard/customer', [DashboardController::class, 'customer'])->middleware('role:customer')->name('dashboard.customer');
 
     // ── Tugas (Tasks) ─────────────────────────────────────────────────
-    // View: all authenticated users
     Route::get('tugas', [TugasController::class, 'index'])->name('tugas.index');
-    Route::get('tugas/{tugas}', [TugasController::class, 'show'])->name('tugas.show');
-    // Manage: admin|sales only
+    // Explicit paths must come before {tugas} wildcard
     Route::get('tugas/create', [TugasController::class, 'create'])->middleware('role:admin|sales')->name('tugas.create');
     Route::post('tugas', [TugasController::class, 'store'])->middleware('role:admin|sales')->name('tugas.store');
+    Route::get('tugas/{tugas}', [TugasController::class, 'show'])->name('tugas.show');
     Route::get('tugas/{tugas}/edit', [TugasController::class, 'edit'])->middleware('role:admin|sales')->name('tugas.edit');
     Route::put('tugas/{tugas}', [TugasController::class, 'update'])->middleware('role:admin|sales')->name('tugas.update');
     Route::patch('tugas/{tugas}', [TugasController::class, 'update'])->middleware('role:admin|sales');

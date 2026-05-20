@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\TaskAssigned;
 use App\Models\Customer;
 use App\Models\Task;
+use App\Models\Template;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,8 +48,11 @@ class TugasController extends Controller
     public function create()
     {
         $customers = Customer::orderBy('name')->get();
-        $teknisi   = User::role('teknisi')->orderBy('name')->get();
-        return view('tugas.create', compact('customers', 'teknisi'));
+        $teknisi   = User::role('teknisi')
+            ->withCount(['tasks as active_tasks' => fn($q) => $q->whereIn('status', ['pending', 'in_progress'])])
+            ->orderBy('name')->get();
+        $templates = Template::orderBy('name')->get();
+        return view('tugas.create', compact('customers', 'teknisi', 'templates'));
     }
 
     public function store(Request $request)
@@ -59,10 +63,13 @@ class TugasController extends Controller
             'customer_id' => 'required|exists:customers,id',
             'assigned_to' => 'required|exists:users,id',
             'due_date'    => 'nullable|date',
+            'priority'    => 'nullable|in:low,normal,high,urgent',
+            'template_id' => 'nullable|exists:templates,id',
         ]);
 
         $validated['created_by'] = Auth::id();
         $validated['status']     = 'pending';
+        $validated['priority']   = $validated['priority'] ?? 'normal';
 
         $task = Task::create($validated);
 
@@ -83,8 +90,11 @@ class TugasController extends Controller
     public function edit(Task $tugas)
     {
         $customers = Customer::orderBy('name')->get();
-        $teknisi   = User::role('teknisi')->orderBy('name')->get();
-        return view('tugas.edit', ['task' => $tugas, 'customers' => $customers, 'teknisi' => $teknisi]);
+        $teknisi   = User::role('teknisi')
+            ->withCount(['tasks as active_tasks' => fn($q) => $q->whereIn('status', ['pending', 'in_progress'])])
+            ->orderBy('name')->get();
+        $templates = Template::orderBy('name')->get();
+        return view('tugas.edit', ['task' => $tugas, 'customers' => $customers, 'teknisi' => $teknisi, 'templates' => $templates]);
     }
 
     public function update(Request $request, Task $tugas)
@@ -96,6 +106,8 @@ class TugasController extends Controller
             'assigned_to' => 'required|exists:users,id',
             'status'      => 'required|in:pending,in_progress,completed',
             'due_date'    => 'nullable|date',
+            'priority'    => 'nullable|in:low,normal,high,urgent',
+            'template_id' => 'nullable|exists:templates,id',
         ]);
 
         $tugas->update($validated);

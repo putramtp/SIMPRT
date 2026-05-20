@@ -26,7 +26,11 @@ class HomeController extends Controller
         $user = auth()->user();
 
         if ($user->hasRole('teknisi')) {
-            return redirect()->route('dashboard.teknisi');
+            return redirect()->route('dashboard.teknisi.my');
+        }
+
+        if ($user->hasRole('customer')) {
+            return redirect()->route('dashboard.customer');
         }
 
         return redirect()->route('dashboard.sales');
