@@ -32,7 +32,7 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css">
 
-    <link rel="stylesheet" href="{{ asset('css/public.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/public.css') }}?v={{ filemtime(public_path('css/public.css')) }}">
     @yield('css')
 </head>
 <body class="pwa-body">
@@ -111,6 +111,18 @@
             </a>
             @endcan
             @endif
+
+            <hr class="nav-divider">
+            @if(Auth::user()->hasRole('teknisi'))
+            <a href="{{ route('profile.signature.show') }}"
+               class="nav-item {{ request()->routeIs('profile.signature*') ? 'active' : '' }}">
+                <i class="ti ti-writing"></i><span>Tanda Tangan</span>
+            </a>
+            @endif
+            <a href="{{ route('profile.password.show') }}"
+               class="nav-item {{ request()->routeIs('profile.password*') ? 'active' : '' }}">
+                <i class="ti ti-lock"></i><span>Edit Password</span>
+            </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -148,10 +160,15 @@
             <div class="pwa-topbar-right">
                 {{-- Notification bell (teknisi only) --}}
                 @if(Auth::user()->hasRole('teknisi'))
-                <button class="notif-bell-btn" id="notifBell" title="Notifikasi">
-                    <i class="ti ti-bell"></i>
-                    <span class="notif-badge" id="notifBadge"></span>
-                </button>
+                <div class="notif-wrap" id="notifWrap">
+                    <button class="notif-bell-btn" id="notifBell" title="Notifikasi" aria-expanded="false">
+                        <i class="ti ti-bell"></i>
+                        @php $unreadCount = Auth::user()->unreadNotifications()->count(); @endphp
+                        <span class="notif-badge{{ $unreadCount ? ' has-notif' : '' }}" id="notifBadge">
+                            {{ $unreadCount ?: '' }}
+                        </span>
+                    </button>
+                </div>
                 @endif
                 <span class="pwa-topbar-user d-none d-md-block">{{ Auth::user()->name }}</span>
                 <form method="POST" action="{{ route('logout') }}" class="mb-0 d-none d-md-block">
@@ -319,15 +336,20 @@
 <script src="{{ asset('css/public.js') }}?v={{ filemtime(public_path('css/public.js')) }}"></script>
 @yield('js')
 
-{{-- ── Pusher / Laravel Echo (teknisi only, runs when Pusher key is configured) ── --}}
+{{-- ── Notification bell (teknisi only) ── --}}
 @auth
-@if(Auth::user()->hasRole('teknisi') && config('broadcasting.connections.pusher.key'))
+@if(Auth::user()->hasRole('teknisi'))
+@if(config('broadcasting.connections.pusher.key'))
 <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.17.1/dist/echo.iife.js"></script>
+@endif
 <script>
 (function () {
-    /* Notification toast container */
-    var $toastBox = $('<div id="notifToastBox" style="position:fixed;top:68px;right:12px;z-index:9998;display:flex;flex-direction:column;gap:8px;max-width:320px;"></div>').appendTo('body');
+    var CSRF = '{{ csrf_token() }}';
+    var drawerOpen = false;
+
+    /* ── Toast ── */
+    var $toastBox = $('<div id="notifToastBox" style="position:fixed;top:68px;right:12px;z-index:10000;display:flex;flex-direction:column;gap:8px;max-width:320px;"></div>').appendTo('body');
 
     function showToast(data) {
         var id = 'nt' + Date.now();
@@ -342,25 +364,135 @@
             + '<div style="font-size:.82rem;font-weight:600;color:var(--text);">' + $('<span>').text(data.title).html() + '</div>'
             + '<div style="font-size:.72rem;color:var(--text-secondary);margin-top:2px;">'
             + $('<span>').text(data.customer_name).html() + ' · ' + $('<span>').text(data.due_date).html()
-            + '</div>'
-            + '</div>'
-            + '</div>';
+            + '</div></div></div>';
         $toastBox.prepend(html);
         setTimeout(function() { $('#' + id).fadeOut(400, function() { $(this).remove(); }); }, 7000);
     }
 
-    function bumpBadge() {
+    /* ── Badge ── */
+    function setBadge(n) {
         var $b = $('#notifBadge');
-        var n = (parseInt($b.text()) || 0) + 1;
-        $b.text(n).addClass('has-notif');
+        if (n > 0) { $b.text(n).addClass('has-notif'); }
+        else        { $b.text('').removeClass('has-notif'); }
     }
 
-    /* Clear badge on bell click */
-    $('#notifBell').on('click', function() {
-        $('#notifBadge').text('').removeClass('has-notif');
+    function bumpBadge() {
+        setBadge((parseInt($('#notifBadge').text()) || 0) + 1);
+    }
+
+    /* ── Backdrop ── */
+    var $backdrop = $('<div id="notifBackdrop"></div>').appendTo('body');
+
+    /* ── Drawer (appended to body, slides from topbar) ── */
+    var $drawer = $(
+        '<div id="notifDrawer">'
+      + '<div style="background:#0D47A1;padding:10px 16px 14px;">'
+      + '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;">'
+      + '<span style="font-size:15px;font-weight:500;color:#fff;">Notifikasi</span>'
+      + '<div style="display:flex;align-items:center;gap:12px;">'
+      + '<span id="notifReadAll" style="font-size:11px;color:#90CAF9;cursor:pointer;text-decoration:underline;">Tandai semua dibaca</span>'
+      + '<button id="notifClose" style="cursor:pointer;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.15);border:none;display:flex;align-items:center;justify-content:center;">'
+      + '<i class="ti ti-x" style="font-size:15px;color:#fff;"></i></button>'
+      + '</div></div>'
+      + '<span id="notifCountLabel" style="font-size:11px;color:#90CAF9;">Memuat...</span>'
+      + '</div>'
+      + '<div id="notifList" style="max-height:340px;overflow-y:auto;">'
+      + '<div id="notifEmpty" style="padding:2rem 1rem;text-align:center;color:#7a8099;font-size:13px;line-height:1.8;">'
+      + '<i class="ti ti-bell-off" style="font-size:2rem;display:block;margin-bottom:8px;opacity:.3;"></i>Tidak ada notifikasi</div>'
+      + '</div>'
+      + '<div style="padding:10px 14px 14px;text-align:center;border-top:0.5px solid #E3F2FD;">'
+      + '<a href="{{ route("laporan.index") }}" style="font-size:12px;color:#1565C0;text-decoration:none;">Lihat semua notifikasi ↗</a>'
+      + '</div>'
+      + '</div>'
+    ).appendTo('body');
+
+    /* ── Build notification item matching reference design ── */
+    function buildItem(n) {
+        var d       = n.data;
+        var isUnread = !n.read;
+        var bg      = isUnread ? '#F0F7FF' : '#fff';
+        var titleC  = isUnread ? '#0C447C' : '#374151';
+        var subC    = isUnread ? '#1565C0' : '#7a8099';
+        var dotHtml = isUnread
+            ? '<div style="position:absolute;top:0;right:0;width:9px;height:9px;background:#FF6B35;border-radius:50%;border:1.5px solid #fff;"></div>'
+            : '';
+        return '<a href="' + d.url + '" class="notif-item' + (isUnread ? ' unread' : '') + '" data-id="' + n.id + '" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-bottom:0.5px solid #E3F2FD;text-decoration:none;background:' + bg + ';cursor:pointer;">'
+            + '<div style="width:36px;height:36px;border-radius:50%;background:#E3F2FD;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;">'
+            + '<i class="ti ti-clipboard-plus" style="font-size:18px;color:#1565C0;"></i>'
+            + dotHtml + '</div>'
+            + '<div style="flex:1;min-width:0;">'
+            + '<div style="font-size:12px;font-weight:500;color:' + titleC + ';margin-bottom:2px;">Tugas Baru Ditugaskan</div>'
+            + '<div style="font-size:11px;color:' + subC + ';line-height:1.5;">' + $('<span>').text(d.title).html() + ' &middot; ' + $('<span>').text(d.customer_name).html() + '</div>'
+            + '<div style="font-size:10px;color:#7986CB;margin-top:4px;display:flex;align-items:center;gap:4px;">'
+            + '<i class="ti ti-clock" style="font-size:11px;"></i> ' + n.time + '</div>'
+            + '</div></a>';
+    }
+
+    /* ── Load notifications ── */
+    function loadNotifications() {
+        $.get('/notifications', function(res) {
+            $('#notifList').find('.notif-item').remove();
+            if (res.notifications.length === 0) {
+                $('#notifEmpty').show();
+            } else {
+                $('#notifEmpty').hide();
+                $('#notifList').append(res.notifications.map(buildItem).join(''));
+            }
+            setBadge(res.unread);
+            var label = res.unread > 0
+                ? res.unread + ' notifikasi belum dibaca'
+                : 'Semua notifikasi sudah dibaca';
+            $('#notifCountLabel').text(label);
+            /* Dim "read all" when nothing unread */
+            $('#notifReadAll').css({ opacity: res.unread > 0 ? '1' : '.4', pointerEvents: res.unread > 0 ? 'auto' : 'none' });
+        });
+    }
+
+    /* ── Open / close ── */
+    function openDrawer() {
+        loadNotifications();
+        $backdrop.addClass('open');
+        $drawer.addClass('open');
+        $('#notifBell').attr('aria-expanded', 'true');
+        drawerOpen = true;
+    }
+
+    function closeDrawer() {
+        $backdrop.removeClass('open');
+        $drawer.removeClass('open');
+        $('#notifBell').attr('aria-expanded', 'false');
+        drawerOpen = false;
+    }
+
+    $('#notifBell').on('click', function(e) {
+        e.stopPropagation();
+        drawerOpen ? closeDrawer() : openDrawer();
     });
 
-    /* Connect Echo */
+    $backdrop.on('click', closeDrawer);
+
+    $(document).on('click', '#notifClose', closeDrawer);
+
+    /* ── Mark single read then navigate ── */
+    $(document).on('click', '.notif-item', function(e) {
+        e.preventDefault();
+        var id  = $(this).data('id');
+        var url = $(this).attr('href');
+        $.post('/notifications/' + id + '/read', { _token: CSRF }, function() {
+            window.location = url;
+        });
+    });
+
+    /* ── Mark all read ── */
+    $(document).on('click', '#notifReadAll', function(e) {
+        e.stopPropagation();
+        $.post('/notifications/read-all', { _token: CSRF }, function() {
+            loadNotifications();
+        });
+    });
+
+    @if(config('broadcasting.connections.pusher.key'))
+    /* ── Real-time Echo ── */
     try {
         window.Echo = new Echo({
             broadcaster: 'pusher',
@@ -368,17 +500,19 @@
             cluster: '{{ config("broadcasting.connections.pusher.options.cluster", "ap1") }}',
             forceTLS: true,
             authEndpoint: '/broadcasting/auth',
-            auth: { headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' } },
+            auth: { headers: { 'X-CSRF-TOKEN': CSRF } },
         });
 
         Echo.private('App.Models.User.{{ Auth::id() }}')
             .listen('.TaskAssigned', function(data) {
                 showToast(data);
                 bumpBadge();
+                if (drawerOpen) loadNotifications();
             });
     } catch (err) {
         console.warn('[SIPRT] Echo not connected:', err.message);
     }
+    @endif
 })();
 </script>
 @endif

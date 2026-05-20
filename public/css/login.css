@@ -318,6 +318,11 @@ body {
   transform: translateY(0);
   box-shadow: 0 4px 14px rgba(21,101,192,.3);
 }
+.login-btn:disabled {
+  opacity: .75;
+  cursor: not-allowed;
+  transform: none;
+}
 
 /* ── Divider ────────────────────────────────────────── */
 .login-divider {

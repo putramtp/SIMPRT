@@ -41,7 +41,9 @@ class LaporanController extends Controller
             ->whereIn('status', ['pending', 'in_progress'])
             ->with('customer')
             ->get();
-        $userSignature = Auth::user()->signature;
+        $userSignature = Auth::user()->signature
+            ? asset('storage/' . Auth::user()->signature)
+            : null;
         return view('laporan.create', compact('tasks', 'userSignature'));
     }
 

@@ -4,6 +4,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LaporanController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TemplateController;
 use App\Http\Controllers\TugasController;
@@ -31,6 +32,15 @@ Route::middleware('auth')->group(function () {
     // Profile — signature setup (must be before signature.required middleware group)
     Route::get('/profile/signature', [ProfileController::class, 'showSignatureSetup'])->name('profile.signature.show');
     Route::post('/profile/signature', [ProfileController::class, 'storeSignature'])->name('profile.signature.store');
+    Route::get('/profile/password',  [ProfileController::class, 'showPasswordEdit'])->name('profile.password.show');
+    Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    // Notifications (teknisi only)
+    Route::middleware('role:teknisi')->group(function () {
+        Route::get('/notifications',            [NotificationController::class, 'index'])->name('notifications.index');
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+        Route::post('/notifications/read-all',  [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    });
 
     Route::middleware('signature.required')->group(function () {
 
@@ -39,13 +49,13 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/teknisi/all', [DashboardController::class, 'teknisiAll'])->middleware('role:admin|sales|teknisi')->name('dashboard.teknisi.all');
     Route::get('/dashboard/teknisi/my', [DashboardController::class, 'teknisiMy'])->middleware('role:teknisi')->name('dashboard.teknisi.my');
     Route::get('/dashboard/customer', [DashboardController::class, 'customer'])->middleware('role:customer')->name('dashboard.customer');
-
     // ── Tugas (Tasks) ─────────────────────────────────────────────────
     Route::get('tugas', [TugasController::class, 'index'])->name('tugas.index');
     // Explicit paths must come before {tugas} wildcard
     Route::get('tugas/create', [TugasController::class, 'create'])->middleware('role:admin|sales')->name('tugas.create');
     Route::post('tugas', [TugasController::class, 'store'])->middleware('role:admin|sales')->name('tugas.store');
     Route::get('tugas/{tugas}', [TugasController::class, 'show'])->name('tugas.show');
+    Route::patch('tugas/{tugas}/start', [TugasController::class, 'start'])->middleware('role:teknisi')->name('tugas.start');
     Route::get('tugas/{tugas}/edit', [TugasController::class, 'edit'])->middleware('role:admin|sales')->name('tugas.edit');
     Route::put('tugas/{tugas}', [TugasController::class, 'update'])->middleware('role:admin|sales')->name('tugas.update');
     Route::patch('tugas/{tugas}', [TugasController::class, 'update'])->middleware('role:admin|sales');

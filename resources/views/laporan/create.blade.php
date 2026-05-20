@@ -345,6 +345,7 @@ $(function () {
 
         if (initialSig) {
             var img = new Image();
+            img.crossOrigin = 'anonymous';
             img.onload = function() {
                 var ratio = window.devicePixelRatio || 1;
                 ctx.drawImage(img, 0, 0, canvas.width / ratio, canvas.height / ratio);
@@ -352,7 +353,7 @@ $(function () {
                 $wrap.addClass('has-sig');
                 $empty.hide();
                 $status.html('<i class="ti ti-check" style="color:var(--green);"></i> <span style="color:var(--green);">Ditandatangani</span>').addClass('signed');
-                $hidden.val(initialSig);
+                $hidden.val(canvas.toDataURL('image/png'));
                 syncPreview();
             };
             img.src = initialSig;

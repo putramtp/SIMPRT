@@ -82,7 +82,8 @@
     display: flex; justify-content: space-between; align-items: flex-start;
     gap: 8px; margin-bottom: 8px;
 }
-.tek-card-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; }
+.tek-card-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.4; text-decoration: none; }
+.tek-card-title:hover { color: var(--blue); text-decoration: none; }
 
 .tek-badge {
     border-radius: 20px; padding: 2px 8px;
@@ -102,21 +103,21 @@
 /* Buttons inside card */
 .tek-card-actions { display: flex; gap: 8px; }
 .tek-btn-nav {
-    flex: 1; background: var(--bg); border: 1px solid var(--border);
+    background: var(--bg); border: 1px solid var(--border);
     border-radius: var(--radius-md); padding: 8px 6px;
     font-size: 12px; color: var(--text-secondary);
     display: inline-flex; align-items: center; justify-content: center;
     gap: 4px; text-decoration: none;
 }
 .tek-btn-primary {
-    flex: 2; background: var(--blue); border: none;
+    background: var(--blue); border: none;
     border-radius: var(--radius-md); padding: 8px;
     font-size: 12px; color: #fff; font-weight: 600;
     display: inline-flex; align-items: center; justify-content: center;
     gap: 4px; text-decoration: none;
 }
 .tek-btn-warning {
-    flex: 2; background: var(--yellow); border: none;
+    background: var(--yellow); border: none;
     border-radius: var(--radius-md); padding: 8px;
     font-size: 12px; color: #412402; font-weight: 600;
     display: inline-flex; align-items: center; justify-content: center;
@@ -168,6 +169,19 @@
     $sorted = $activeTasks->sortBy(fn($t) => $t->status === 'in_progress' ? 0 : 1)->values();
 @endphp
 
+@if(session('success'))
+<div class="alert alert-success alert-dismissible py-2 mb-3" style="font-size:.84rem;">
+    <i class="ti ti-circle-check me-1"></i>{{ session('success') }}
+    <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+</div>
+@endif
+@if(session('info'))
+<div class="alert alert-info alert-dismissible py-2 mb-3" style="font-size:.84rem;">
+    <i class="ti ti-info-circle me-1"></i>{{ session('info') }}
+    <button type="button" class="btn-close btn-sm" data-bs-dismiss="alert"></button>
+</div>
+@endif
+
 {{-- ── Hero ── --}}
 <div class="tek-hero">
     <div class="tek-hero-row">
@@ -218,7 +232,7 @@
     <div class="tek-card-bar {{ $bar }}"></div>
     <div class="tek-card-body">
         <div class="tek-card-head">
-            <div class="tek-card-title">{{ $task->title }}</div>
+            <a href="{{ route('tugas.show', $task) }}" class="tek-card-title">{{ $task->title }}</a>
             <span class="tek-badge badge-{{ $task->status }}">{{ $label }}</span>
         </div>
         <div class="tek-meta">
@@ -241,18 +255,24 @@
         </div>
         <div class="tek-card-actions">
             <a href="https://www.google.com/maps/search/?api=1&query={{ $mapsQ }}"
-               target="_blank" rel="noopener" class="tek-btn-nav">
+               target="_blank" rel="noopener" class="tek-btn-nav" style="flex:1;">
                 <i class="ti ti-map"></i> Navigasi
             </a>
             @if($task->status === 'in_progress')
-                <a href="{{ route('laporan.create', ['task_id' => $task->id]) }}" class="tek-btn-primary">
+                <a href="{{ route('laporan.create', ['task_id' => $task->id]) }}" class="tek-btn-primary" style="flex:1;">
                     <i class="ti ti-file-plus"></i> Isi Laporan
                 </a>
             @else
-                <a href="{{ route('tugas.show', $task) }}" class="tek-btn-warning">
-                    <i class="ti ti-player-play"></i> Lihat Detail
-                </a>
+                <form action="{{ route('tugas.start', $task) }}" method="POST" style="flex:1;display:flex;">
+                    @csrf @method('PATCH')
+                    <button type="submit" class="tek-btn-primary" style="flex:1;cursor:pointer;">
+                        <i class="ti ti-player-play"></i> Mulai Tugas
+                    </button>
+                </form>
             @endif
+            <a href="{{ route('tugas.show', $task) }}" class="tek-btn-warning" style="flex:1;">
+                <i class="ti ti-eye"></i> Detail
+            </a>
         </div>
     </div>
 </div>

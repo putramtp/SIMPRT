@@ -129,7 +129,7 @@ $(function () {
             markSigned();
             $('#h_signature').val(img.src);
         };
-        img.src = @json(auth()->user()->signature);
+        img.src = @json(asset('storage/' . auth()->user()->signature));
     })();
     @endif
 

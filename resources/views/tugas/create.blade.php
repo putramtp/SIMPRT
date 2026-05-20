@@ -277,7 +277,7 @@
             @php
                 $initials = strtoupper(implode('', array_map(fn($w) => $w[0], explode(' ', trim($t->name)))));
                 $initials = mb_substr($initials, 0, 2);
-                $busy = $t->active_tasks >= 3;
+                $busy = $t->active_tasks >= 7;
             @endphp
             <div class="ftg-tek-card {{ $busy ? 'busy' : '' }} {{ old('assigned_to') == $t->id ? 'selected' : '' }}"
                  data-id="{{ $t->id }}"

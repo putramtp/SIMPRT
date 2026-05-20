@@ -7,6 +7,7 @@ use App\Models\Customer;
 use App\Models\Task;
 use App\Models\Template;
 use App\Models\User;
+use App\Notifications\TaskAssignedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
@@ -73,12 +74,25 @@ class TugasController extends Controller
 
         $task = Task::create($validated);
 
-        // Only broadcast if Pusher is configured
+        // Persist notification in DB
+        $task->assignee->notify(new TaskAssignedNotification($task));
+
+        // Real-time broadcast if Pusher is configured
         if (config('broadcasting.connections.pusher.key')) {
             TaskAssigned::dispatch($task);
         }
 
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil dibuat.');
+    }
+
+    public function start(Task $tugas)
+    {
+        if ($tugas->assigned_to !== Auth::id()) abort(403);
+        if ($tugas->status !== 'pending') {
+            return back()->with('info', 'Status tugas sudah berubah.');
+        }
+        $tugas->update(['status' => 'in_progress']);
+        return back()->with('success', 'Tugas dimulai. Silakan isi laporan setelah selesai.');
     }
 
     public function show(Task $tugas)
@@ -110,7 +124,13 @@ class TugasController extends Controller
             'template_id' => 'nullable|exists:templates,id',
         ]);
 
+        $oldAssignee = $tugas->assigned_to;
         $tugas->update($validated);
+
+        // Notify the new assignee if reassigned
+        if ($oldAssignee !== (int) $validated['assigned_to']) {
+            $tugas->fresh()->assignee->notify(new TaskAssignedNotification($tugas->fresh()));
+        }
 
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil diperbarui.');
     }

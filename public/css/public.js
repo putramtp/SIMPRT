@@ -38,6 +38,34 @@ setTimeout(function () {
     });
 }, 4000);
 
+/* ── Submit button loading state ── */
+document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('form').forEach(function (form) {
+        form.addEventListener('submit', function (e) {
+            if (e.defaultPrevented) return;
+
+            var btn = form.querySelector('[type="submit"]');
+            if (!btn || btn.disabled) return;
+
+            // Skip logout buttons
+            if (btn.classList.contains('sidebar-logout') || btn.classList.contains('pwa-logout-btn')) return;
+
+            var original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="btn-spinner"></span> Memproses...';
+
+            // Restore on browser back (bfcache)
+            window.addEventListener('pageshow', function handler(ev) {
+                if (ev.persisted) {
+                    btn.disabled = false;
+                    btn.innerHTML = original;
+                }
+                window.removeEventListener('pageshow', handler);
+            });
+        });
+    });
+});
+
 /* ── DataTables global defaults (applied after DT loaded) ── */
 document.addEventListener('DOMContentLoaded', function () {
     if (typeof $.fn === 'undefined' || typeof $.fn.dataTable === 'undefined') return;
