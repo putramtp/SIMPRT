@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Report;
 use App\Models\Task;
+use App\Models\User;
+use App\Notifications\TaskCompletedNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -68,7 +70,11 @@ class LaporanController extends Controller
         if (empty($validated['signature_tech'])) unset($validated['signature_tech']);
         if (empty($validated['signature_cust'])) unset($validated['signature_cust']);
 
-        Report::create($validated);
+        $report = Report::create($validated);
+
+        $report->load(['task.customer', 'teknisi']);
+        User::role(['admin', 'sales'])->get()
+            ->each(fn($u) => $u->notify(new TaskCompletedNotification($report)));
 
         return redirect()->route('laporan.index')->with('success', 'Laporan berhasil dikirim.');
     }

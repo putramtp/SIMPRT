@@ -8,6 +8,7 @@ use App\Models\Task;
 use App\Models\Template;
 use App\Models\User;
 use App\Notifications\TaskAssignedNotification;
+use App\Notifications\TaskStartedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Yajra\DataTables\Facades\DataTables;
@@ -92,6 +93,11 @@ class TugasController extends Controller
             return back()->with('info', 'Status tugas sudah berubah.');
         }
         $tugas->update(['status' => 'in_progress']);
+
+        $tugas->load(['assignee', 'customer']);
+        User::role(['admin', 'sales'])->get()
+            ->each(fn($u) => $u->notify(new TaskStartedNotification($tugas)));
+
         return back()->with('success', 'Tugas dimulai. Silakan isi laporan setelah selesai.');
     }
 

@@ -35,8 +35,8 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile/password',  [ProfileController::class, 'showPasswordEdit'])->name('profile.password.show');
     Route::post('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
-    // Notifications (teknisi only)
-    Route::middleware('role:teknisi')->group(function () {
+    // Notifications (teknisi, admin, sales)
+    Route::middleware('role:teknisi|admin|sales')->group(function () {
         Route::get('/notifications',            [NotificationController::class, 'index'])->name('notifications.index');
         Route::post('/notifications/{id}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
         Route::post('/notifications/read-all',  [NotificationController::class, 'markAllRead'])->name('notifications.read-all');

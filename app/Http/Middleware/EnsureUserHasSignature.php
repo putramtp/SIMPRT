@@ -11,7 +11,7 @@ class EnsureUserHasSignature
     {
         $user = auth()->user();
 
-        if ($user && $user->hasRole('teknisi') && !$user->signature) {
+        if ($user && !$user->signature) {
             if (!$request->routeIs('profile.signature.*')) {
                 return redirect()->route('profile.signature.show');
             }

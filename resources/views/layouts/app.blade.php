@@ -60,7 +60,6 @@
                class="nav-item {{ request()->routeIs('dashboard.customer') ? 'active' : '' }}">
                 <i class="ti ti-file-text"></i><span>Laporan Saya</span>
             </a>
-
             @else
             {{-- Admin / Sales / Teknisi --}}
             @canany(['view users', 'create customers', 'edit customers'])
@@ -112,33 +111,31 @@
             @endcan
             @endif
 
-            <hr class="nav-divider">
-            @if(Auth::user()->hasRole('teknisi'))
-            <a href="{{ route('profile.signature.show') }}"
-               class="nav-item {{ request()->routeIs('profile.signature*') ? 'active' : '' }}">
-                <i class="ti ti-writing"></i><span>Tanda Tangan</span>
-            </a>
-            @endif
-            <a href="{{ route('profile.password.show') }}"
-               class="nav-item {{ request()->routeIs('profile.password*') ? 'active' : '' }}">
-                <i class="ti ti-lock"></i><span>Edit Password</span>
-            </a>
         </nav>
 
         <div class="sidebar-footer">
-            <div class="sidebar-user">
+            <button class="sidebar-user-toggle" id="sidebarUserToggle" aria-expanded="false">
                 <div class="sidebar-avatar">{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}</div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name">{{ Auth::user()->name }}</div>
                     <div class="sidebar-user-role">{{ Auth::user()->roles->first()?->name ?? 'user' }}</div>
                 </div>
+                <i class="ti ti-chevron-up sidebar-user-chevron"></i>
+            </button>
+            <div class="sidebar-user-menu" id="sidebarUserMenu">
+                <a href="{{ route('profile.signature.show') }}" class="sidebar-user-menu-item">
+                    <i class="ti ti-writing"></i><span>Tanda Tangan</span>
+                </a>
+                <a href="{{ route('profile.password.show') }}" class="sidebar-user-menu-item">
+                    <i class="ti ti-lock"></i><span>Edit Password</span>
+                </a>
+                <form method="POST" action="{{ route('logout') }}" class="mb-0">
+                    @csrf
+                    <button type="submit" class="sidebar-logout">
+                        <i class="ti ti-logout"></i><span>Keluar</span>
+                    </button>
+                </form>
             </div>
-            <form method="POST" action="{{ route('logout') }}" class="mt-2">
-                @csrf
-                <button type="submit" class="sidebar-logout">
-                    <i class="ti ti-logout"></i><span>Keluar</span>
-                </button>
-            </form>
         </div>
     </aside>
 
@@ -158,8 +155,8 @@
             </div>
             <span class="pwa-topbar-title">{{ config('app.name', 'SIPRT') }}</span>
             <div class="pwa-topbar-right">
-                {{-- Notification bell (teknisi only) --}}
-                @if(Auth::user()->hasRole('teknisi'))
+                {{-- Notification bell (teknisi, admin, sales) --}}
+                @if(Auth::user()->hasAnyRole(['teknisi', 'admin', 'sales']))
                 <div class="notif-wrap" id="notifWrap">
                     <button class="notif-bell-btn" id="notifBell" title="Notifikasi" aria-expanded="false">
                         <i class="ti ti-bell"></i>
@@ -312,6 +309,14 @@
     sidebar?.querySelectorAll('.nav-item').forEach(el =>
         el.addEventListener('click', () => { if (window.innerWidth < 640) closeSidebar(); }));
 
+    // ── Sidebar user menu toggle ──
+    const userToggle = document.getElementById('sidebarUserToggle');
+    const userMenu   = document.getElementById('sidebarUserMenu');
+    userToggle?.addEventListener('click', () => {
+        const open = userMenu?.classList.toggle('open');
+        userToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    });
+
     // ── Password visibility (login page) ──
     const toggleBtn = document.getElementById('togglePassword');
     if (toggleBtn) {
@@ -336,9 +341,9 @@
 <script src="{{ asset('css/public.js') }}?v={{ filemtime(public_path('css/public.js')) }}"></script>
 @yield('js')
 
-{{-- ── Notification bell (teknisi only) ── --}}
+{{-- ── Notification bell (teknisi, admin, sales) ── --}}
 @auth
-@if(Auth::user()->hasRole('teknisi'))
+@if(Auth::user()->hasAnyRole(['teknisi', 'admin', 'sales']))
 @if(config('broadcasting.connections.pusher.key'))
 <script src="https://cdn.jsdelivr.net/npm/pusher-js@8.4.0/dist/web/pusher.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1.17.1/dist/echo.iife.js"></script>
@@ -408,21 +413,37 @@
 
     /* ── Build notification item matching reference design ── */
     function buildItem(n) {
-        var d       = n.data;
+        var d        = n.data;
         var isUnread = !n.read;
-        var bg      = isUnread ? '#F0F7FF' : '#fff';
-        var titleC  = isUnread ? '#0C447C' : '#374151';
-        var subC    = isUnread ? '#1565C0' : '#7a8099';
-        var dotHtml = isUnread
+        var bg       = isUnread ? '#F0F7FF' : '#fff';
+        var titleC   = isUnread ? '#0C447C' : '#374151';
+        var subC     = isUnread ? '#1565C0' : '#7a8099';
+        var dotHtml  = isUnread
             ? '<div style="position:absolute;top:0;right:0;width:9px;height:9px;background:#FF6B35;border-radius:50%;border:1.5px solid #fff;"></div>'
             : '';
+
+        var icon, label, sub;
+        if (d.type === 'task_started') {
+            icon  = 'ti-player-play';
+            label = 'Tugas Dimulai';
+            sub   = $('<span>').text(d.title).html() + ' &middot; ' + $('<span>').text(d.teknisi_name).html();
+        } else if (d.type === 'task_completed') {
+            icon  = 'ti-file-check';
+            label = 'Laporan Dikirim';
+            sub   = $('<span>').text(d.title).html() + ' &middot; ' + $('<span>').text(d.teknisi_name).html();
+        } else {
+            icon  = 'ti-clipboard-plus';
+            label = 'Tugas Baru Ditugaskan';
+            sub   = $('<span>').text(d.title).html() + ' &middot; ' + $('<span>').text(d.customer_name).html();
+        }
+
         return '<a href="' + d.url + '" class="notif-item' + (isUnread ? ' unread' : '') + '" data-id="' + n.id + '" style="display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border-bottom:0.5px solid #E3F2FD;text-decoration:none;background:' + bg + ';cursor:pointer;">'
             + '<div style="width:36px;height:36px;border-radius:50%;background:#E3F2FD;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;">'
-            + '<i class="ti ti-clipboard-plus" style="font-size:18px;color:#1565C0;"></i>'
+            + '<i class="ti ' + icon + '" style="font-size:18px;color:#1565C0;"></i>'
             + dotHtml + '</div>'
             + '<div style="flex:1;min-width:0;">'
-            + '<div style="font-size:12px;font-weight:500;color:' + titleC + ';margin-bottom:2px;">Tugas Baru Ditugaskan</div>'
-            + '<div style="font-size:11px;color:' + subC + ';line-height:1.5;">' + $('<span>').text(d.title).html() + ' &middot; ' + $('<span>').text(d.customer_name).html() + '</div>'
+            + '<div style="font-size:12px;font-weight:500;color:' + titleC + ';margin-bottom:2px;">' + label + '</div>'
+            + '<div style="font-size:11px;color:' + subC + ';line-height:1.5;">' + sub + '</div>'
             + '<div style="font-size:10px;color:#7986CB;margin-top:4px;display:flex;align-items:center;gap:4px;">'
             + '<i class="ti ti-clock" style="font-size:11px;"></i> ' + n.time + '</div>'
             + '</div></a>';
