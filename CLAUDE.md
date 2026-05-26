@@ -8,7 +8,7 @@ Guidance for Claude Code when working in this repository.
 
 **SIPRT** — Laravel 10 task assignment & technician reporting system.
 **Stack:** Laravel 10, PHP 8.1+, MySQL (`db_siprt`), Bootstrap 5 CDN, jQuery 3.7.1 CDN, Yajra DataTables, Spatie Permission v6, barryvdh/laravel-dompdf, Laravel Sanctum.
-**All 5 development phases complete + post-phase improvements (latest: sidebar user dropdown, all-role signature gate, admin/sales notifications — 2026-05-21). Next: deployment.**
+**All 5 development phases complete + post-phase improvements (latest: customer portal separation, multi-assignee tasks — 2026-05-26). Next: deployment.**
 
 ### Actors
 
@@ -16,7 +16,7 @@ Guidance for Claude Code when working in this repository.
 |---|---|
 | `admin` / `sales` | Create tasks, manage customers/users, build templates, view all reports |
 | `teknisi` | View assigned tasks, submit reports |
-| `customer` | Login → `dashboard.customer`; see only their company's reports; linked via `users.customer_id` → `customers.id` |
+| `customer` | Login via `/customer/login` → `customer.dashboard`; see only their company's reports; stored in `customer_users` table with separate `customer` guard |
 | Public | Read-only report access via signed URL (`/c/{customer}/laporan`) — no auth |
 
 ---
@@ -43,11 +43,17 @@ Admin account: `admin@siprt.com` / `password`
 All web feature routes live inside `middleware('auth')`. Key auth rules:
 - `role:admin|sales` — tugas create/edit/delete, template store/destroy, `dashboard.sales`, `dashboard.teknisi.all`
 - `role:teknisi` — laporan create/store, `dashboard.teknisi.my`
-- `role:customer` — `dashboard.customer`
 - `can:view users` — users resource
 - `can:view customers` — customers resource + laporan
 - `GET /c/{customer}/laporan` — public signed URL (no auth)
 - `GET /api/*` — Sanctum token auth (see `routes/api.php`)
+
+**Customer portal routes** (separate `auth:customer` guard — prefix `/customer`):
+- `GET /customer/login` → `CustomerLoginController@showLoginForm` — separate login page (no staff overlap)
+- `POST /customer/login` / `POST /customer/logout` — authenticate/deauthenticate against `customer` guard
+- `GET /customer/dashboard` → `CustomerDashboardController@index` (requires `customer.signature` middleware)
+- `GET /customer/laporan` / `GET /customer/laporan/{laporan}` — customer's own reports only
+- `GET/POST /customer/profile/signature` + `/customer/profile/password` — outside signature gate
 
 **Teknisi dashboards:**
 - `/dashboard/teknisi/all` → `DashboardController@teknisiAll` (admin/sales) — all tasks, DataTables Ajax + Chart.js charts
@@ -76,7 +82,7 @@ Fixed seeded accounts (password: `password`):
 - `admin@siprt.com` — role: admin
 - `sales@siprt.com` — role: sales
 - `teknisi@siprt.com` — role: teknisi
-- `customer@siprt.com` — role: customer, linked to PT Maju Jaya Abadi
+- `customer@siprt.com` — in `customer_users` table (no Spatie role), linked to PT Maju Jaya Abadi; login at `/customer/login`
 
 ### DataTables Ajax pattern — do not break
 
@@ -118,9 +124,22 @@ Bootstrap CSS → Icons → DataTables CSS → `public.css` → `@yield('css')` 
 
 Chart.js (`chart.umd.min.js`) is **not** in the global layout — load it only in the views that need charts via `@section('js')`, before any chart initialisation code.
 
+### Task assignees (many-to-many)
+Tasks support multiple assignees via a `task_user` pivot table (task_id, user_id, timestamps).
+
+- `Task::assignees()` — `belongsToMany(User::class, 'task_user')->withTimestamps()`
+- `User::tasks()` — `belongsToMany(Task::class, 'task_user')->withTimestamps()` (used for `withCount` in dashboards)
+- `TugasController@store/update` validates `assignees` (array of user IDs), then calls `$task->assignees()->sync($ids)`
+- `TugasController@start` checks `$tugas->assignees()->where('user_id', Auth::id())->exists()`
+- `LaporanController@create/edit` filters tasks with `Task::whereHas('assignees', fn($q) => $q->where('users.id', Auth::id()))`
+- `Api\TaskController` and `Api\ReportController` use the same pivot check for teknisi authorization
+- `create.blade.php` — teknisi cards are multi-selectable (toggle); hidden inputs `assignees[]` managed dynamically by `toggleTeknisi()`
+- `edit.blade.php` — checkboxes `name="assignees[]"` pre-checked from `$selectedTeknisi`
+- DataTables `assignee_name` column uses `$t->assignees->pluck('name')->join(', ')` (computed, not orderable/searchable)
+
 ### DB Notifications
-- **`TaskAssignedNotification`** → teknisi: new task assigned (`TugasController@store`, `@update` on reassignment)
-- **`TaskStartedNotification`** → admin+sales: teknisi clicked Mulai Tugas (`TugasController@start`)
+- **`TaskAssignedNotification`** → all assignees: new task assigned (`TugasController@store`), only newly added on reassignment (`@update`)
+- **`TaskStartedNotification`** → admin+sales: teknisi clicked Mulai Tugas (`TugasController@start`); `teknisi_name` lists all assignees joined with `, `
 - **`TaskCompletedNotification`** → admin+sales: teknisi submitted laporan (`LaporanController@store`)
 - All use `via: ['database']`; stored in `notifications` table
 - `NotificationController` returns JSON: `{ notifications: [...], unread: n }`; each item has `id`, `data`, `read` (bool), `time` (human diff)
@@ -132,8 +151,10 @@ Chart.js (`chart.umd.min.js`) is **not** in the global layout — load it only i
 - `buildItem()` in `app.blade.php` branches on `d.type`: `task_started` → `ti-player-play`, `task_completed` → `ti-file-check`, default → `ti-clipboard-plus`
 - UI: slide-down drawer from topbar (`#notifDrawer`), backdrop (`#notifBackdrop`), orange unread dot on bell badge
 
-### First-login signature gate (all roles)
-`EnsureUserHasSignature` middleware (alias `signature.required`) redirects any authenticated user without a `signature` to `GET /profile/signature`. Applies to all roles — admin, sales, teknisi, customer. The profile routes (`/profile/signature`, `/profile/password`) are declared **outside** the `signature.required` group so they remain accessible.
+### First-login signature gate
+- **Staff** (`web` guard): `EnsureUserHasSignature` middleware (alias `signature.required`) redirects to `GET /profile/signature`. Profile routes declared outside the gate group.
+- **Customer** (`customer` guard): `EnsureCustomerHasSignature` middleware (alias `customer.signature`) redirects to `GET /customer/profile/signature`. Applied only inside the `auth:customer` protected group, after the profile routes.
+- Both gates check that `->signature` is non-null/non-empty.
 
 ### Sidebar user dropdown
 The `sidebar-footer` contains a `#sidebarUserToggle` button (avatar + name + role + chevron). Clicking it toggles `#sidebarUserMenu.open` via `max-height` CSS transition. The menu holds: Tanda Tangan → `/profile/signature`, Edit Password → `/profile/password`, Keluar (logout form). The IIFE in `app.blade.php` handles the toggle. The logout button keeps class `sidebar-logout` for the global submit-loading exclusion in `public.js`.

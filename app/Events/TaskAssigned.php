@@ -17,12 +17,14 @@ class TaskAssigned implements ShouldBroadcast
 
     public function __construct(Task $task)
     {
-        $this->task = $task->load(['customer', 'assignee']);
+        $this->task = $task->load(['customer', 'assignees']);
     }
 
     public function broadcastOn(): array
     {
-        return [new PrivateChannel('App.Models.User.' . $this->task->assigned_to)];
+        return $this->task->assignees
+            ->map(fn($u) => new PrivateChannel('App.Models.User.' . $u->id))
+            ->all();
     }
 
     public function broadcastAs(): string

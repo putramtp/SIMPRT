@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
@@ -38,26 +37,23 @@ class UserController extends Controller
 
     public function create()
     {
-        $roles     = Role::all();
-        $customers = Customer::orderBy('name')->get();
-        return view('users.create', compact('roles', 'customers'));
+        $roles = Role::whereNotIn('name', ['customer'])->get();
+        return view('users.create', compact('roles'));
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|email|unique:users',
-            'password'    => 'required|min:8|confirmed',
-            'role'        => 'required|exists:roles,name',
-            'customer_id' => 'nullable|exists:customers,id',
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users',
+            'password' => 'required|min:8|confirmed',
+            'role'     => 'required|exists:roles,name',
         ]);
 
         $user = User::create([
-            'name'        => $validated['name'],
-            'email'       => $validated['email'],
-            'password'    => $validated['password'],
-            'customer_id' => $validated['role'] === 'customer' ? ($validated['customer_id'] ?? null) : null,
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => $validated['password'],
         ]);
         $user->assignRole($validated['role']);
 
@@ -71,24 +67,21 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $roles     = Role::all();
-        $customers = Customer::orderBy('name')->get();
-        return view('users.edit', compact('user', 'roles', 'customers'));
+        $roles = Role::whereNotIn('name', ['customer'])->get();
+        return view('users.edit', compact('user', 'roles'));
     }
 
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name'        => 'required|string|max:255',
-            'email'       => 'required|email|unique:users,email,' . $user->id,
-            'role'        => 'required|exists:roles,name',
-            'customer_id' => 'nullable|exists:customers,id',
+            'name'  => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'role'  => 'required|exists:roles,name',
         ]);
 
         $user->update([
-            'name'        => $validated['name'],
-            'email'       => $validated['email'],
-            'customer_id' => $validated['role'] === 'customer' ? ($validated['customer_id'] ?? null) : null,
+            'name'  => $validated['name'],
+            'email' => $validated['email'],
         ]);
         $user->syncRoles([$validated['role']]);
 

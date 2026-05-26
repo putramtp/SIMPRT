@@ -54,13 +54,6 @@
         </div>
 
         <nav class="sidebar-nav">
-            @if(Auth::user()->hasRole('customer'))
-            {{-- Customer: only their reports --}}
-            <a href="{{ route('dashboard.customer') }}"
-               class="nav-item {{ request()->routeIs('dashboard.customer') ? 'active' : '' }}">
-                <i class="ti ti-file-text"></i><span>Laporan Saya</span>
-            </a>
-            @else
             {{-- Admin / Sales / Teknisi --}}
             @canany(['view users', 'create customers', 'edit customers'])
             <a href="{{ route('dashboard.sales') }}"
@@ -109,7 +102,6 @@
                 <i class="ti ti-user-cog"></i><span>Manage User</span>
             </a>
             @endcan
-            @endif
 
         </nav>
 
@@ -189,27 +181,7 @@
     {{-- ── Bottom Navigation (mobile only) ── --}}
     <nav class="pwa-bottom-nav" id="bottomNav">
 
-        @if(Auth::user()->hasRole('customer'))
-        {{-- Customer: Beranda | Laporan | Keluar --}}
-        <a href="{{ route('dashboard.customer') }}"
-           class="pwa-bn-item {{ request()->routeIs('dashboard.customer') ? 'active' : '' }}">
-            <i class="ti ti-home"></i>
-            <span>Beranda</span>
-        </a>
-        <a href="{{ route('dashboard.customer') }}"
-           class="pwa-bn-item {{ request()->routeIs('laporan.*') ? 'active' : '' }}">
-            <i class="ti ti-file-text"></i>
-            <span>Laporan</span>
-        </a>
-        <button type="button" class="pwa-bn-item"
-                onclick="document.getElementById('custBnLogout').submit()"
-                style="background:none;border:none;width:100%;cursor:pointer;">
-            <i class="ti ti-logout"></i>
-            <span>Keluar</span>
-        </button>
-        <form id="custBnLogout" method="POST" action="{{ route('logout') }}" style="display:none;">@csrf</form>
-
-        @elseif(Auth::user()->hasRole('teknisi'))
+        @if(Auth::user()->hasRole('teknisi'))
         {{-- Teknisi: Beranda | Tugas | Laporan | Keluar --}}
         <a href="{{ route('dashboard.teknisi.my') }}"
            class="pwa-bn-item {{ request()->routeIs('dashboard.teknisi.my') ? 'active' : '' }}">

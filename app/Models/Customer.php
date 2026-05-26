@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\CustomerUser;
 
 class Customer extends Model
 {
@@ -11,9 +12,9 @@ class Customer extends Model
 
     protected $fillable = ['name', 'phone', 'email', 'address'];
 
-    public function user()
+    public function portalUser()
     {
-        return $this->hasOne(User::class);
+        return $this->hasOne(CustomerUser::class);
     }
 
     public function tasks()

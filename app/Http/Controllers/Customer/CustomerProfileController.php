@@ -1,16 +1,18 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Customer;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
-class ProfileController extends Controller
+class CustomerProfileController extends Controller
 {
-    public function showSignatureSetup()
+    public function showSignature()
     {
-        return view('profile.signature');
+        return view('customer.profile.signature');
     }
 
     public function storeSignature(Request $request)
@@ -19,29 +21,26 @@ class ProfileController extends Controller
 
         $value = $request->signature;
 
-        // Only process when a new drawing is submitted (base64 data URL)
         if (str_starts_with($value, 'data:image/')) {
-            $user = auth()->user();
+            $user = Auth::guard('customer')->user();
             $path = 'signatures/' . uniqid('SIGN-') . '.png';
 
-            // Delete previous file if it exists
             if ($user->signature) {
                 Storage::disk('public')->delete($user->signature);
             }
 
-            // Decode and save PNG
             $imageData = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $value));
             Storage::disk('public')->put($path, $imageData);
 
             $user->update(['signature' => $path]);
         }
 
-        return redirect()->intended(route('home'))->with('success', 'Tanda tangan berhasil disimpan.');
+        return redirect()->intended(route('customer.dashboard'))->with('success', 'Tanda tangan berhasil disimpan.');
     }
 
-    public function showPasswordEdit()
+    public function showPassword()
     {
-        return view('profile.password');
+        return view('customer.profile.password');
     }
 
     public function updatePassword(Request $request)
@@ -51,7 +50,7 @@ class ProfileController extends Controller
             'password'         => 'required|string|min:8|confirmed',
         ]);
 
-        $user = auth()->user();
+        $user = Auth::guard('customer')->user();
 
         if (!Hash::check($request->current_password, $user->password)) {
             return back()->withErrors(['current_password' => 'Password saat ini tidak sesuai.']);

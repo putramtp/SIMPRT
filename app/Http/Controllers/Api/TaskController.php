@@ -12,10 +12,10 @@ class TaskController extends Controller
     {
         $user = $request->user();
 
-        $query = Task::with(['customer:id,name', 'assignee:id,name'])->latest();
+        $query = Task::with(['customer:id,name', 'assignees:id,name'])->latest();
 
         if ($user->hasRole('teknisi')) {
-            $query->where('assigned_to', $user->id);
+            $query->whereHas('assignees', fn($q) => $q->where('users.id', $user->id));
         }
 
         $tasks = $query->paginate(20)->through(function ($t) {
@@ -26,7 +26,7 @@ class TaskController extends Controller
                 'status'        => $t->status,
                 'due_date'      => $t->due_date?->toDateString(),
                 'customer_name' => $t->customer?->name,
-                'assignee_name' => $t->assignee?->name,
+                'assignee_name' => $t->assignees->pluck('name')->join(', '),
             ];
         });
 
@@ -37,11 +37,11 @@ class TaskController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('teknisi') && $task->assigned_to !== $user->id) {
+        if ($user->hasRole('teknisi') && !$task->assignees()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Forbidden.'], 403);
         }
 
-        $task->load(['customer:id,name,email,phone', 'assignee:id,name', 'reports:id,task_id,user_id,status,created_at']);
+        $task->load(['customer:id,name,email,phone', 'assignees:id,name', 'reports:id,task_id,user_id,status,created_at']);
 
         return response()->json([
             'id'            => $task->id,
@@ -50,7 +50,7 @@ class TaskController extends Controller
             'status'        => $task->status,
             'due_date'      => $task->due_date?->toDateString(),
             'customer'      => $task->customer,
-            'assignee'      => $task->assignee,
+            'assignees'     => $task->assignees,
             'reports_count' => $task->reports->count(),
         ]);
     }

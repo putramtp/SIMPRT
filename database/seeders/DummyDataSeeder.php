@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Customer;
+use App\Models\CustomerUser;
 use App\Models\Report;
 use App\Models\Task;
 use App\Models\Technician;
@@ -34,7 +35,7 @@ class DummyDataSeeder extends Seeder
         );
         $teknisi->syncRoles(['teknisi']);
 
-        // Fixed customer account linked to a named customer record
+        // Fixed customer portal account linked to a named customer record
         $customerRecord = Customer::firstOrCreate(
             ['email' => 'pt.majujaya@example.com'],
             [
@@ -43,7 +44,7 @@ class DummyDataSeeder extends Seeder
                 'address' => 'Jl. Industri No. 45, Batam',
             ]
         );
-        $customerUser = User::firstOrCreate(
+        $customerPortalUser = CustomerUser::firstOrCreate(
             ['email' => 'customer@siprt.com'],
             [
                 'name'        => 'PT Maju Jaya Abadi',
@@ -51,10 +52,9 @@ class DummyDataSeeder extends Seeder
                 'customer_id' => $customerRecord->id,
             ]
         );
-        if (!$customerUser->customer_id) {
-            $customerUser->update(['customer_id' => $customerRecord->id]);
+        if (!$customerPortalUser->customer_id) {
+            $customerPortalUser->update(['customer_id' => $customerRecord->id]);
         }
-        $customerUser->syncRoles(['customer']);
 
         // ── Templates ─────────────────────────────────────────────────────
         $templates = [

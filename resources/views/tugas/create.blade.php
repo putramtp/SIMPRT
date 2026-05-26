@@ -184,7 +184,11 @@
 <form action="{{ route('tugas.store') }}" method="POST" id="tugasForm">
 @csrf
 <input type="hidden" name="priority"    id="f_priority"    value="{{ old('priority', 'normal') }}">
-<input type="hidden" name="assigned_to" id="f_assigned_to" value="{{ old('assigned_to') }}">
+<div id="assignees-inputs">
+    @foreach(old('assignees', []) as $aid)
+    <input type="hidden" name="assignees[]" value="{{ $aid }}">
+    @endforeach
+</div>
 
 {{-- ── STEP 1: Detail Pekerjaan ── --}}
 <div class="ftg-section active" id="step1">
@@ -279,9 +283,9 @@
                 $initials = mb_substr($initials, 0, 2);
                 $busy = $t->active_tasks >= 7;
             @endphp
-            <div class="ftg-tek-card {{ $busy ? 'busy' : '' }} {{ old('assigned_to') == $t->id ? 'selected' : '' }}"
+            <div class="ftg-tek-card {{ $busy ? 'busy' : '' }} {{ in_array((string)$t->id, array_map('strval', old('assignees', []))) ? 'selected' : '' }}"
                  data-id="{{ $t->id }}"
-                 onclick="{{ $busy ? '' : 'selectTeknisi(this)' }}">
+                 onclick="{{ $busy ? '' : 'toggleTeknisi(this)' }}">
                 <div class="ftg-tek-avatar">{{ $initials }}</div>
                 <div style="flex:1;min-width:0;">
                     <div class="ftg-tek-name">{{ $t->name }}</div>
@@ -306,7 +310,7 @@
             @endforelse
         </div>
         <div class="ftg-error ms-3 mb-3" id="err_teknisi" style="display:none;">
-            Pilih salah satu teknisi untuk melanjutkan.
+            Pilih minimal satu teknisi untuk melanjutkan.
         </div>
     </div>
 
@@ -442,19 +446,29 @@
         }
     }).trigger('change');
 
-    /* ── Teknisi card selection ── */
-    window.selectTeknisi = function (el) {
-        $('.ftg-tek-card').removeClass('selected');
-        $(el).addClass('selected');
-        $('#f_assigned_to').val($(el).data('id'));
+    /* ── Teknisi card multi-selection ── */
+    window.toggleTeknisi = function (el) {
+        var $card = $(el);
+        var id    = $card.data('id');
+        if ($card.hasClass('selected')) {
+            $card.removeClass('selected');
+            $('#assignees-inputs input[value="' + id + '"]').remove();
+        } else {
+            $card.addClass('selected');
+            $('<input>').attr({ type: 'hidden', name: 'assignees[]', value: id })
+                .appendTo('#assignees-inputs');
+        }
         $('#err_teknisi').hide();
     };
 
-    // Pre-select on old()
-    var oldTeknisi = '{{ old("assigned_to") }}';
-    if (oldTeknisi) {
-        $('.ftg-tek-card[data-id="' + oldTeknisi + '"]').addClass('selected');
-    }
+    // Sync hidden inputs with Blade-pre-selected cards (old() values)
+    $('.ftg-tek-card.selected').each(function () {
+        var id = $(this).data('id');
+        if (!$('#assignees-inputs input[value="' + id + '"]').length) {
+            $('<input>').attr({ type: 'hidden', name: 'assignees[]', value: id })
+                .appendTo('#assignees-inputs');
+        }
+    });
 
     /* ── Template preview ── */
     var templateData = @json($templates->keyBy('id')->map(fn($t) => $t->fields));
@@ -504,7 +518,7 @@
                 if (!ok) return;
             }
             if (currentStep === 2) {
-                if (!$('#f_assigned_to').val()) {
+                if (!$('.ftg-tek-card.selected').length) {
                     $('#err_teknisi').show(); return;
                 }
                 $('#err_teknisi').hide();
@@ -555,8 +569,9 @@
         $('#sum_title').text($('#f_title').val() || '—');
         var custTxt = $('#f_customer option:selected').text();
         $('#sum_customer').text(custTxt === '-- Pilih Customer --' ? '—' : custTxt);
-        var tekCard = $('.ftg-tek-card.selected');
-        $('#sum_teknisi').text(tekCard.length ? tekCard.find('.ftg-tek-name').text() : '—');
+        var names = [];
+        $('.ftg-tek-card.selected').each(function () { names.push($(this).find('.ftg-tek-name').text()); });
+        $('#sum_teknisi').text(names.length ? names.join(', ') : '—');
         var due = $('#f_due_date').val();
         $('#sum_deadline').text(due ? new Date(due).toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' }) : 'Tidak ditentukan');
         var prio = $('#f_priority').val();
@@ -567,7 +582,7 @@
     // If returning from validation error, go to correct step
     @if($errors->has('title') || $errors->has('customer_id') || $errors->has('description') || $errors->has('due_date'))
         goStep(1);
-    @elseif($errors->has('assigned_to'))
+    @elseif($errors->has('assignees'))
         goStep(2);
     @elseif($errors->has('template_id'))
         goStep(3);

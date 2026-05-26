@@ -54,4 +54,102 @@ dl dd { font-size: .9rem; color: var(--text); }
         </a>
     </div>
 </div>
+
+{{-- ── Portal Akses ── --}}
+@can('edit customers')
+<div class="panel-card mt-3">
+    <div class="panel-card-header">
+        <i class="ti ti-key"></i> Portal Akses Customer
+    </div>
+
+    @if(session('success'))
+    <div class="alert alert-success m-3 py-2" style="font-size:.85rem;">
+        <i class="ti ti-circle-check me-1"></i>{{ session('success') }}
+    </div>
+    @endif
+    @if(session('error'))
+    <div class="alert alert-danger m-3 py-2" style="font-size:.85rem;">{{ session('error') }}</div>
+    @endif
+
+    @if($customer->portalUser)
+    {{-- Existing portal user: show info + reset password --}}
+    <div style="padding:1rem 1.25rem;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+            <div style="width:36px;height:36px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="ti ti-user" style="color:var(--blue);font-size:18px;"></i>
+            </div>
+            <div>
+                <div style="font-weight:600;font-size:.9rem;">{{ $customer->portalUser->name }}</div>
+                <div style="font-size:.8rem;color:var(--text-secondary);">{{ $customer->portalUser->email }}</div>
+            </div>
+            <a href="{{ route('customer.login') }}" target="_blank"
+               style="margin-left:auto;font-size:.75rem;color:var(--blue);">
+                Halaman Login <i class="ti ti-external-link" style="font-size:11px;"></i>
+            </a>
+        </div>
+
+        <details style="border:1px solid var(--border-light);border-radius:var(--radius-md);">
+            <summary style="padding:8px 12px;font-size:.82rem;font-weight:600;cursor:pointer;color:var(--text-secondary);">
+                <i class="ti ti-lock me-1"></i>Reset Password Portal
+            </summary>
+            <div style="padding:12px;">
+                <form action="{{ route('customers.portal-user.reset-password', $customer) }}" method="POST">
+                    @csrf
+                    <div class="mb-2">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text-secondary);">Password Baru</label>
+                        <input type="password" name="password" class="form-control form-control-sm @error('password') is-invalid @enderror"
+                               required minlength="8" placeholder="Min. 8 karakter">
+                        @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
+                    <div class="mb-3">
+                        <label style="font-size:.78rem;font-weight:600;color:var(--text-secondary);">Konfirmasi Password</label>
+                        <input type="password" name="password_confirmation" class="form-control form-control-sm" required minlength="8">
+                    </div>
+                    <button type="submit" class="btn btn-warning btn-sm">
+                        <i class="ti ti-refresh me-1"></i>Reset Password
+                    </button>
+                </form>
+            </div>
+        </details>
+    </div>
+
+    @else
+    {{-- No portal user yet: show create form --}}
+    <div style="padding:1rem 1.25rem;">
+        <p style="font-size:.83rem;color:var(--text-secondary);margin-bottom:1rem;">
+            Belum ada akun portal untuk customer ini. Buat akun agar customer dapat login dan melihat laporan mereka.
+        </p>
+        <form action="{{ route('customers.portal-user.store', $customer) }}" method="POST">
+            @csrf
+            <div class="mb-2">
+                <label style="font-size:.78rem;font-weight:600;color:var(--text-secondary);">Nama</label>
+                <input type="text" name="name" class="form-control form-control-sm @error('name') is-invalid @enderror"
+                       value="{{ old('name', $customer->name) }}" required>
+                @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="mb-2">
+                <label style="font-size:.78rem;font-weight:600;color:var(--text-secondary);">Email Login</label>
+                <input type="email" name="email" class="form-control form-control-sm @error('email') is-invalid @enderror"
+                       value="{{ old('email', $customer->email) }}" required>
+                @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="mb-2">
+                <label style="font-size:.78rem;font-weight:600;color:var(--text-secondary);">Password</label>
+                <input type="password" name="password" class="form-control form-control-sm @error('password') is-invalid @enderror"
+                       required minlength="8" placeholder="Min. 8 karakter">
+                @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+            </div>
+            <div class="mb-3">
+                <label style="font-size:.78rem;font-weight:600;color:var(--text-secondary);">Konfirmasi Password</label>
+                <input type="password" name="password_confirmation" class="form-control form-control-sm" required minlength="8">
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">
+                <i class="ti ti-plus me-1"></i>Buat Akses Portal
+            </button>
+        </form>
+    </div>
+    @endif
+</div>
+@endcan
+
 @endsection

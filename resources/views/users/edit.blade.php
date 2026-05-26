@@ -34,22 +34,12 @@
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Role</label>
-                    <select name="role" id="roleSelect" class="form-select @error('role') is-invalid @enderror" required>
+                    <select name="role" class="form-select @error('role') is-invalid @enderror" required>
                         @foreach($roles as $role)
                             <option value="{{ $role->name }}" {{ old('role', $user->roles->first()?->name) === $role->name ? 'selected' : '' }}>{{ ucfirst($role->name) }}</option>
                         @endforeach
                     </select>
                     @error('role')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="mb-3" id="customerField" style="display:none;">
-                    <label class="form-label">Customer</label>
-                    <select name="customer_id" class="form-select @error('customer_id') is-invalid @enderror">
-                        <option value="">-- Pilih Customer --</option>
-                        @foreach($customers as $c)
-                            <option value="{{ $c->id }}" {{ old('customer_id', $user->customer_id) == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('customer_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
                 <button type="submit" class="btn btn-primary">Perbarui</button>
             </form>
@@ -58,14 +48,3 @@
 </div>
 @endsection
 
-@section('js')
-<script>
-(function () {
-    var sel = document.getElementById('roleSelect');
-    var box = document.getElementById('customerField');
-    function toggle() { box.style.display = sel.value === 'customer' ? '' : 'none'; }
-    sel.addEventListener('change', toggle);
-    toggle();
-})();
-</script>
-@endsection

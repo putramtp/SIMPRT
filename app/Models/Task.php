@@ -12,7 +12,7 @@ class Task extends Model
 
     protected $fillable = [
         'title', 'description', 'customer_id',
-        'assigned_to', 'created_by', 'status', 'due_date', 'priority', 'template_id',
+        'created_by', 'status', 'due_date', 'priority', 'template_id',
     ];
 
     protected $casts = ['due_date' => 'date'];
@@ -22,9 +22,9 @@ class Task extends Model
         return $this->belongsTo(Customer::class);
     }
 
-    public function assignee()
+    public function assignees()
     {
-        return $this->belongsTo(User::class, 'assigned_to');
+        return $this->belongsToMany(User::class, 'task_user')->withTimestamps();
     }
 
     public function creator()

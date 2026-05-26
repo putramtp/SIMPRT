@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\Customer\Auth\CustomerLoginController;
+use App\Http\Controllers\Customer\CustomerDashboardController;
+use App\Http\Controllers\Customer\CustomerProfileController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HomeController;
@@ -13,7 +16,31 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return Auth::check() ? redirect('/home') : redirect('/login');
+    if (Auth::check()) return redirect('/home');
+    if (Auth::guard('customer')->check()) return redirect()->route('customer.dashboard');
+    return redirect('/login');
+});
+
+// ── Customer portal auth (unauthenticated) ─────────────────────────────────
+Route::prefix('customer')->name('customer.')->group(function () {
+    Route::get('/login',  [CustomerLoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [CustomerLoginController::class, 'login'])->name('login.submit');
+    Route::post('/logout',[CustomerLoginController::class, 'logout'])->name('logout');
+});
+
+// ── Customer portal protected routes ───────────────────────────────────────
+Route::middleware(['auth:customer'])->prefix('customer')->name('customer.')->group(function () {
+    // Profile (outside signature gate so users can set their signature)
+    Route::get('/profile/signature', [CustomerProfileController::class, 'showSignature'])->name('profile.signature.show');
+    Route::post('/profile/signature',[CustomerProfileController::class, 'storeSignature'])->name('profile.signature.store');
+    Route::get('/profile/password',  [CustomerProfileController::class, 'showPassword'])->name('profile.password.show');
+    Route::post('/profile/password', [CustomerProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    Route::middleware('customer.signature')->group(function () {
+        Route::get('/dashboard',         [CustomerDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/laporan',           [CustomerDashboardController::class, 'laporan'])->name('laporan');
+        Route::get('/laporan/{laporan}', [CustomerDashboardController::class, 'show'])->name('laporan.show');
+    });
 });
 
 Auth::routes();
@@ -48,7 +75,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard/sales', [DashboardController::class, 'sales'])->middleware('role:admin|sales')->name('dashboard.sales');
     Route::get('/dashboard/teknisi/all', [DashboardController::class, 'teknisiAll'])->middleware('role:admin|sales|teknisi')->name('dashboard.teknisi.all');
     Route::get('/dashboard/teknisi/my', [DashboardController::class, 'teknisiMy'])->middleware('role:teknisi')->name('dashboard.teknisi.my');
-    Route::get('/dashboard/customer', [DashboardController::class, 'customer'])->middleware('role:customer')->name('dashboard.customer');
     // ── Tugas (Tasks) ─────────────────────────────────────────────────
     Route::get('tugas', [TugasController::class, 'index'])->name('tugas.index');
     // Explicit paths must come before {tugas} wildcard
@@ -90,6 +116,12 @@ Route::middleware('auth')->group(function () {
         Route::get('customers/{customer}/laporan', [CustomerController::class, 'laporan'])
             ->middleware('can:view customer reports')
             ->name('customers.laporan');
+        Route::post('customers/{customer}/portal-user', [CustomerController::class, 'storePortalUser'])
+            ->middleware('can:edit customers')
+            ->name('customers.portal-user.store');
+        Route::post('customers/{customer}/portal-user/reset-password', [CustomerController::class, 'resetPortalPassword'])
+            ->middleware('can:edit customers')
+            ->name('customers.portal-user.reset-password');
     });
 
     }); // end signature.required group

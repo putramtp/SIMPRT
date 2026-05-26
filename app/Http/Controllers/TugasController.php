@@ -18,16 +18,16 @@ class TugasController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $query = Task::with(['customer', 'assignee'])->latest();
+            $query = Task::with(['customer', 'assignees'])->latest();
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('customer_name', fn($t) => $t->customer?->name ?? '-')
-                ->addColumn('assignee_name', fn($t) => $t->assignee?->name ?? '-')
+                ->addColumn('assignee_name', fn($t) => $t->assignees->pluck('name')->join(', ') ?: '-')
                 ->addColumn('status_badge', function ($t) {
                     $color = match ($t->status) {
-                        'completed'  => 'success',
+                        'completed'   => 'success',
                         'in_progress' => 'warning',
-                        default      => 'secondary',
+                        default       => 'secondary',
                     };
                     $label = ucfirst(str_replace('_', ' ', $t->status));
                     return "<span class=\"badge bg-{$color}\">{$label}</span>";
@@ -63,22 +63,31 @@ class TugasController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
             'customer_id' => 'required|exists:customers,id',
-            'assigned_to' => 'required|exists:users,id',
+            'assignees'   => 'required|array|min:1',
+            'assignees.*' => 'exists:users,id',
             'due_date'    => 'nullable|date',
             'priority'    => 'nullable|in:low,normal,high,urgent',
             'template_id' => 'nullable|exists:templates,id',
         ]);
 
-        $validated['created_by'] = Auth::id();
-        $validated['status']     = 'pending';
-        $validated['priority']   = $validated['priority'] ?? 'normal';
+        $task = Task::create([
+            'title'       => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'customer_id' => $validated['customer_id'],
+            'created_by'  => Auth::id(),
+            'status'      => 'pending',
+            'priority'    => $validated['priority'] ?? 'normal',
+            'due_date'    => $validated['due_date'] ?? null,
+            'template_id' => $validated['template_id'] ?? null,
+        ]);
 
-        $task = Task::create($validated);
+        $task->assignees()->sync($validated['assignees']);
+        $task->load('assignees');
 
-        // Persist notification in DB
-        $task->assignee->notify(new TaskAssignedNotification($task));
+        foreach ($task->assignees as $assignee) {
+            $assignee->notify(new TaskAssignedNotification($task));
+        }
 
-        // Real-time broadcast if Pusher is configured
         if (config('broadcasting.connections.pusher.key')) {
             TaskAssigned::dispatch($task);
         }
@@ -88,13 +97,13 @@ class TugasController extends Controller
 
     public function start(Task $tugas)
     {
-        if ($tugas->assigned_to !== Auth::id()) abort(403);
+        if (!$tugas->assignees()->where('user_id', Auth::id())->exists()) abort(403);
         if ($tugas->status !== 'pending') {
             return back()->with('info', 'Status tugas sudah berubah.');
         }
         $tugas->update(['status' => 'in_progress']);
 
-        $tugas->load(['assignee', 'customer']);
+        $tugas->load(['assignees', 'customer']);
         User::role(['admin', 'sales'])->get()
             ->each(fn($u) => $u->notify(new TaskStartedNotification($tugas)));
 
@@ -103,18 +112,25 @@ class TugasController extends Controller
 
     public function show(Task $tugas)
     {
-        $tugas->load(['customer', 'assignee', 'reports.teknisi']);
+        $tugas->load(['customer', 'assignees', 'reports.teknisi']);
         return view('tugas.show', ['task' => $tugas]);
     }
 
     public function edit(Task $tugas)
     {
-        $customers = Customer::orderBy('name')->get();
-        $teknisi   = User::role('teknisi')
+        $customers       = Customer::orderBy('name')->get();
+        $teknisi         = User::role('teknisi')
             ->withCount(['tasks as active_tasks' => fn($q) => $q->whereIn('status', ['pending', 'in_progress'])])
             ->orderBy('name')->get();
-        $templates = Template::orderBy('name')->get();
-        return view('tugas.edit', ['task' => $tugas, 'customers' => $customers, 'teknisi' => $teknisi, 'templates' => $templates]);
+        $templates       = Template::orderBy('name')->get();
+        $selectedTeknisi = $tugas->assignees->pluck('id')->toArray();
+        return view('tugas.edit', [
+            'task'            => $tugas,
+            'customers'       => $customers,
+            'teknisi'         => $teknisi,
+            'templates'       => $templates,
+            'selectedTeknisi' => $selectedTeknisi,
+        ]);
     }
 
     public function update(Request $request, Task $tugas)
@@ -123,19 +139,33 @@ class TugasController extends Controller
             'title'       => 'required|string|max:255',
             'description' => 'nullable|string',
             'customer_id' => 'required|exists:customers,id',
-            'assigned_to' => 'required|exists:users,id',
+            'assignees'   => 'required|array|min:1',
+            'assignees.*' => 'exists:users,id',
             'status'      => 'required|in:pending,in_progress,completed',
             'due_date'    => 'nullable|date',
             'priority'    => 'nullable|in:low,normal,high,urgent',
             'template_id' => 'nullable|exists:templates,id',
         ]);
 
-        $oldAssignee = $tugas->assigned_to;
-        $tugas->update($validated);
+        $oldAssigneeIds = $tugas->assignees->pluck('id')->toArray();
 
-        // Notify the new assignee if reassigned
-        if ($oldAssignee !== (int) $validated['assigned_to']) {
-            $tugas->fresh()->assignee->notify(new TaskAssignedNotification($tugas->fresh()));
+        $tugas->update([
+            'title'       => $validated['title'],
+            'description' => $validated['description'] ?? null,
+            'customer_id' => $validated['customer_id'],
+            'status'      => $validated['status'],
+            'due_date'    => $validated['due_date'] ?? null,
+            'priority'    => $validated['priority'] ?? 'normal',
+            'template_id' => $validated['template_id'] ?? null,
+        ]);
+
+        $tugas->assignees()->sync($validated['assignees']);
+
+        // Notify only newly added assignees
+        $newIds = array_diff($validated['assignees'], $oldAssigneeIds);
+        if ($newIds) {
+            User::whereIn('id', $newIds)->get()
+                ->each(fn($u) => $u->notify(new TaskAssignedNotification($tugas)));
         }
 
         return redirect()->route('tugas.index')->with('success', 'Tugas berhasil diperbarui.');

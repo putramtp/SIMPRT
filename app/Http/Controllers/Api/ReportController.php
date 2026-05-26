@@ -74,7 +74,7 @@ class ReportController extends Controller
         ]);
 
         $task = Task::findOrFail($request->task_id);
-        if ($task->assigned_to !== $user->id) {
+        if (!$task->assignees()->where('user_id', $user->id)->exists()) {
             return response()->json(['message' => 'Tugas ini bukan milik Anda.'], 403);
         }
 

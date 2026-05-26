@@ -170,7 +170,7 @@ $(function () {
             { data: 'DT_RowIndex',   name: 'DT_RowIndex',   orderable: false, searchable: false, width: '44px' },
             { data: 'title',         name: 'title' },
             { data: 'customer_name', name: 'customer.name' },
-            { data: 'assignee_name', name: 'assignee.name', orderable: false },
+            { data: 'assignee_name', name: 'assignees.name', orderable: false, searchable: false },
             { data: 'status_badge',  name: 'status' },
             { data: 'due_date_fmt',  name: 'due_date' },
             { data: 'action',        name: 'action', orderable: false, searchable: false, className: 'text-end' },

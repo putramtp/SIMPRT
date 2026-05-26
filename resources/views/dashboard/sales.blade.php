@@ -185,7 +185,7 @@ $(function () {
             { data: 'DT_RowIndex',     name: 'id',           orderable: false, searchable: false, width: '40px' },
             { data: 'title',           name: 'title' },
             { data: 'customer_name',   name: 'customer.name', searchable: false },
-            { data: 'assignee_name',   name: 'assignee.name', searchable: false, className: 'd-mobile-none' },
+            { data: 'assignee_name',   name: 'assignees.name', searchable: false, orderable: false, className: 'd-mobile-none' },
             { data: 'status_badge',    name: 'status',        searchable: false },
             { data: 'due_date_fmt',    name: 'due_date',      searchable: false, className: 'd-mobile-none', defaultContent: '-' },
             { data: 'action',          name: 'action',        orderable: false, searchable: false },

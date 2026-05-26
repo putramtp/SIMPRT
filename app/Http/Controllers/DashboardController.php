@@ -34,12 +34,12 @@ class DashboardController extends Controller
     public function teknisiAll(Request $request)
     {
         if ($request->ajax()) {
-            $query = Task::with(['customer', 'assignee'])->latest();
+            $query = Task::with(['customer', 'assignees'])->latest();
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('customer_name', fn($t) => $t->customer?->name ?? '-')
-                ->addColumn('assignee_name', fn($t) => $t->assignee
-                    ? $t->assignee->name
+                ->addColumn('assignee_name', fn($t) => $t->assignees->isNotEmpty()
+                    ? $t->assignees->pluck('name')->join(', ')
                     : '<span class="text-muted fst-italic" style="font-size:.8rem;">Belum ditugaskan</span>')
                 ->addColumn('status_badge', function ($t) {
                     $map = [
@@ -81,25 +81,10 @@ class DashboardController extends Controller
 
     public function teknisiMy()
     {
-        $myTasks   = Task::where('assigned_to', Auth::id())->with('customer')->latest()->get();
+        $myTasks   = Task::whereHas('assignees', fn($q) => $q->where('users.id', Auth::id()))->with('customer')->latest()->get();
         $myReports = Report::where('user_id', Auth::id())->with('task.customer')->latest()->take(5)->get();
 
         return view('dashboard.teknisi-my', compact('myTasks', 'myReports'));
     }
 
-    public function customer()
-    {
-        $customer = Auth::user()->customer;
-
-        if (!$customer) {
-            abort(403, 'Akun Anda belum terhubung ke data customer. Hubungi administrator.');
-        }
-
-        $reports = Report::with(['task', 'teknisi'])
-            ->whereHas('task', fn($q) => $q->where('customer_id', $customer->id))
-            ->latest()
-            ->get();
-
-        return view('dashboard.customer', compact('customer', 'reports'));
-    }
 }

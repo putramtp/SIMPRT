@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\CustomerUser;
 use App\Models\Report;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
 use Yajra\DataTables\Facades\DataTables;
 
@@ -59,7 +61,43 @@ class CustomerController extends Controller
 
     public function show(Customer $customer)
     {
+        $customer->load('portalUser');
         return view('customers.show', compact('customer'));
+    }
+
+    public function storePortalUser(Request $request, Customer $customer)
+    {
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:customer_users,email',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        CustomerUser::create([
+            'customer_id' => $customer->id,
+            'name'        => $validated['name'],
+            'email'       => $validated['email'],
+            'password'    => Hash::make($validated['password']),
+        ]);
+
+        return redirect()->route('customers.show', $customer)->with('success', 'Akses portal customer berhasil dibuat.');
+    }
+
+    public function resetPortalPassword(Request $request, Customer $customer)
+    {
+        $validated = $request->validate([
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $portalUser = $customer->portalUser;
+
+        if (!$portalUser) {
+            return redirect()->route('customers.show', $customer)->with('error', 'Akun portal tidak ditemukan.');
+        }
+
+        $portalUser->update(['password' => Hash::make($validated['password'])]);
+
+        return redirect()->route('customers.show', $customer)->with('success', 'Password portal customer berhasil direset.');
     }
 
     public function edit(Customer $customer)

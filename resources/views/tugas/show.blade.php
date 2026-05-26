@@ -60,7 +60,7 @@
         </div>
         <div>
             <div class="field-label">Teknisi</div>
-            <div class="field-val">{{ $task->assignee->name ?? "-" }}</div>
+            <div class="field-val">{{ $task->assignees->pluck('name')->join(', ') ?: '—' }}</div>
         </div>
         <div>
             <div class="field-label">Status</div>

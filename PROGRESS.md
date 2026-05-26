@@ -108,3 +108,74 @@
 - Backdrop at `z-index: 9997`; clicking backdrop closes drawer
 - Desktop: right-aligned, `width: 360px`; mobile: full-width
 - Footer link: "Lihat semua notifikasi ↗" → `/laporan`
+
+## Multi-Assignee Tasks (2026-05-26) ✅
+
+### Pivot Table
+- Replaced `tasks.assigned_to` FK column with `task_user` pivot table (task_id, user_id, timestamps)
+- Migration `2026_05_26_000003_create_task_user_pivot.php`: creates pivot, migrates existing data, drops old column
+- `Task::assignees()` — `belongsToMany(User::class, 'task_user')`
+- `User::tasks()` changed from `hasMany(..., 'assigned_to')` to `belongsToMany(Task::class, 'task_user')` — `withCount` in dashboards continues to work via pivot JOIN
+
+### Controller Updates
+- `TugasController@store/update`: validates `assignees[]` array, uses `sync()`; notifies all assignees on create, only new ones on update
+- `TugasController@start`: checks `$tugas->assignees()->where('user_id', Auth::id())->exists()`
+- `TugasController@index/show/edit`: loads `assignees` relation; `assignee_name` DataTables column joins names with `, `
+- `DashboardController@teknisiMy`: `whereHas('assignees', ...)` instead of `where('assigned_to', ...)`
+- `DashboardController@teknisiAll`: loads `assignees`; added missing `use App\Models\Report`
+- `LaporanController@create/edit`: `whereHas('assignees', ...)` filter for teknisi
+- `Api\TaskController`: pivot-based filtering and authorization; response includes `assignees` array
+- `Api\ReportController`: pivot check replaces `assigned_to !== $user->id`
+- `TaskAssigned` event: broadcasts on all assignees' private channels
+- `TaskStartedNotification`: `teknisi_name` shows all assignees joined with `, `
+
+### View Updates
+- `tugas/create.blade.php`: teknisi cards are now multi-selectable (toggle, not single-select); JS manages `assignees[]` hidden inputs dynamically via `toggleTeknisi()`; step 2 validation checks `$('.ftg-tek-card.selected').length`; summary shows comma-joined names
+- `tugas/edit.blade.php`: replaced single `<select name="assigned_to">` with checkboxes `name="assignees[]"` pre-checked from `$selectedTeknisi`
+- `tugas/show.blade.php`: lists all assignees joined with `, `
+- DataTables columns for assignee_name: set `orderable: false, searchable: false` (computed column)
+
+### Factory
+- `TaskFactory`: removed `assigned_to`; uses `afterCreating` callback to attach a random teknisi via `sync()`
+
+---
+
+## Customer Portal Separation (2026-05-26) ✅
+
+### Separate `customer_users` Table
+- New `customer_users` table (id, customer_id FK, name, email, password, signature, remember_token, timestamps)
+- New `CustomerUser` model (`app/Models/CustomerUser.php`) — Authenticatable, no Spatie roles
+- Data migration: moves existing customer-role users from `users` → `customer_users` on upgrade; reverses on rollback
+- `customer` Spatie role removed; `users` table no longer has customer accounts
+
+### Separate Laravel Guard
+- `customer` guard added to `config/auth.php` using `customer_users` provider + `CustomerUser` model
+- `EnsureCustomerHasSignature` middleware (alias `customer.signature`) — guard-specific signature gate
+
+### Separate Customer Login Page
+- `GET /customer/login` → `CustomerLoginController@showLoginForm` → `customer.auth.login` view
+- `POST /customer/login` → authenticates against `customer` guard
+- `POST /customer/logout` → logs out `customer` guard, redirects to `/customer/login`
+- Login page: same visual style as staff login; "Staff login →" link to avoid confusion
+- Staff login at `/login` unchanged and exclusive to admin/sales/teknisi
+
+### Customer Layout & Views
+- New `resources/views/layouts/customer.blade.php` — simplified sidebar (Beranda, Laporan Saya), user dropdown (Tanda Tangan, Edit Password, Keluar), mobile bottom nav; no notification bell
+- `customer.dashboard` → `CustomerDashboardController@index` (extends `layouts.customer`)
+- `customer.laporan` → `CustomerDashboardController@laporan`
+- `customer.laporan.show` → `CustomerDashboardController@show` (with authorization: report must belong to user's customer)
+- `customer.profile.signature` + `customer.profile.password` → `CustomerProfileController`
+
+### Portal Access Management (Admin UI)
+- `Customer@portalUser` — `hasOne(CustomerUser::class)` relationship
+- `customers/{customer}/portal-user` (POST) → `CustomerController@storePortalUser` — create portal account
+- `customers/{customer}/portal-user/reset-password` (POST) → `CustomerController@resetPortalPassword`
+- Customer `show` view: "Portal Akses" card shows existing email + reset-password accordion, or create form if no portal user
+
+### Cleaned Up
+- `app.blade.php`: removed customer sidebar/bottom-nav branches (customer uses separate layout)
+- `HomeController`: removed customer role redirect (customer guard never hits `/home`)
+- `UserController`: removed customer role option and customer_id field
+- `User` model: removed `customer_id` fillable and `customer()` relationship
+- `DashboardController`: removed `customer()` method (replaced by `CustomerDashboardController`)
+- `RolePermissionSeeder`: removed customer role

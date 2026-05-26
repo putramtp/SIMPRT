@@ -29,10 +29,6 @@ class HomeController extends Controller
             return redirect()->route('dashboard.teknisi.my');
         }
 
-        if ($user->hasRole('customer')) {
-            return redirect()->route('dashboard.customer');
-        }
-
         return redirect()->route('dashboard.sales');
     }
 }

@@ -20,7 +20,7 @@ class TaskStartedNotification extends Notification
             'type'          => 'task_started',
             'task_id'       => $this->task->id,
             'title'         => $this->task->title,
-            'teknisi_name'  => $this->task->assignee?->name ?? '-',
+            'teknisi_name'  => $this->task->assignees->pluck('name')->join(', ') ?: '-',
             'customer_name' => $this->task->customer?->name ?? '-',
             'url'           => route('tugas.show', $this->task),
         ];

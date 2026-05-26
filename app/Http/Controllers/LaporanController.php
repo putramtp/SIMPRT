@@ -39,7 +39,7 @@ class LaporanController extends Controller
 
     public function create()
     {
-        $tasks = Task::where('assigned_to', Auth::id())
+        $tasks = Task::whereHas('assignees', fn($q) => $q->where('users.id', Auth::id()))
             ->whereIn('status', ['pending', 'in_progress'])
             ->with('customer')
             ->get();
@@ -93,7 +93,7 @@ class LaporanController extends Controller
         );
         $tasks = Auth::user()->hasAnyRole(['admin', 'sales'])
             ? Task::with('customer')->get()
-            : Task::where('assigned_to', Auth::id())->with('customer')->get();
+            : Task::whereHas('assignees', fn($q) => $q->where('users.id', Auth::id()))->with('customer')->get();
         return view('laporan.edit', compact('laporan', 'tasks'));
     }
 

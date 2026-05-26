@@ -40,12 +40,25 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Teknisi</label>
-                    <select name="assigned_to" class="form-select" required>
+                    <label class="form-label">Teknisi <span class="text-danger">*</span></label>
+                    @error('assignees')<div class="text-danger small mb-1">{{ $message }}</div>@enderror
+                    @php $oldAssignees = old('assignees', $selectedTeknisi); @endphp
+                    <div style="border:1px solid var(--bs-border-color);border-radius:.375rem;padding:.5rem .75rem;display:flex;flex-direction:column;gap:.35rem;">
                         @foreach($teknisi as $t)
-                            <option value="{{ $t->id }}" {{ old('assigned_to', $task->assigned_to) == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox"
+                                   name="assignees[]" value="{{ $t->id }}"
+                                   id="tek_{{ $t->id }}"
+                                   {{ in_array($t->id, array_map('intval', $oldAssignees)) ? 'checked' : '' }}>
+                            <label class="form-check-label" for="tek_{{ $t->id }}" style="font-size:.9rem;">
+                                {{ $t->name }}
+                                @if($t->active_tasks > 0)
+                                <span class="text-muted" style="font-size:.78rem;">({{ $t->active_tasks }} tugas aktif)</span>
+                                @endif
+                            </label>
+                        </div>
                         @endforeach
-                    </select>
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Status</label>
