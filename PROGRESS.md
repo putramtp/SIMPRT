@@ -245,3 +245,17 @@
 - `laporan/edit.blade.php` (draft mode): shows alert banner + customer signature canvas (SigPad); signing + saving triggers auto-submit in `update()` which marks task completed and notifies
 - Admin/sales retain full status dropdown in edit view; technician sees only the signature canvas when completing a draft
 - `teknisi-my` dashboard: draft tasks show orange "Draft" badge + "Lengkapi" (→ edit) instead of "Isi Laporan"
+
+---
+
+## Signature Refactor — Remove `signature_tech`, Store `signature_cust` as File (2026-06-02) ✅
+
+- Migration `2026_06_02_000003_refactor_report_signatures`:
+  - Converts any existing base64 `signature_cust` DB values → PNG files in `storage/app/public/signatures/` (SHA-256 hash of image data as filename; duplicate signatures reuse the same file)
+  - Drops `signature_tech` column from `reports` table
+- `Report` model: `signature_tech` removed from `$fillable`; `signature_cust` now stores a file path, not base64
+- `LaporanController::saveSig(string $base64): string` — private helper that decodes base64, writes to `storage/public/signatures/{sha256}.png`, returns the path; called by both `store()` and `update()`
+- `laporan/create.blade.php`: tech signature canvas removed entirely — only customer signature canvas remains (section renamed "Tanda Tangan Customer"); `h_sig_tech` hidden input and all `sigTech` JS references removed; `$userSignature` no longer passed from controller
+- Display in all views (show, customer/laporan/show, edit): tech sig → `asset('storage/' . $laporan->teknisi->signature)`; cust sig → `asset('storage/' . $laporan->signature_cust)`
+- PDF: both sigs use `public_path('storage/' . ...)` for dompdf local file access
+- `Api/ReportController`: `show()` returns `signature_tech_url` (from teknisi relation) and `signature_cust_url` (from path); `store()` saves `signature_cust` via same file pattern

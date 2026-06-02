@@ -142,7 +142,6 @@
 
 <form action="{{ route('laporan.store') }}" method="POST" enctype="multipart/form-data" id="laporanForm">
 @csrf
-<input type="hidden" name="signature_tech" id="h_sig_tech">
 <input type="hidden" name="signature_cust" id="h_sig_cust">
 @if(request('task_id'))
 <input type="hidden" name="task_id" value="{{ request('task_id') }}">
@@ -215,52 +214,28 @@
             <div class="form-card-body" id="templateFields"></div>
         </div>
 
-        {{-- Signature canvas section --}}
+        {{-- Customer signature --}}
         <div class="sig-section">
             <div class="sig-section-header">
-                <i class="ti ti-writing"></i> Tanda Tangan
+                <i class="ti ti-writing"></i> Tanda Tangan Customer
                 <span style="font-size:.7rem;color:var(--text-secondary);margin-left:auto;">Gunakan mouse/jari untuk menandatangani</span>
             </div>
-            <div class="sig-grid">
-
-                {{-- Teknisi signature --}}
-                <div class="sig-pad-wrap">
-                    <div class="sig-pad-label">Tanda Tangan Teknisi</div>
-                    <div class="sig-canvas-container" id="sigTechWrap">
-                        <canvas id="sigTechCanvas" height="120"></canvas>
-                        <div class="sig-canvas-empty" id="sigTechEmpty">
-                            <i class="ti ti-pencil"></i> Tanda tangan di sini
-                        </div>
-                    </div>
-                    <div class="sig-toolbar">
-                        <span class="sig-status" id="sigTechStatus">
-                            <i class="ti ti-clock"></i> Belum ditandatangani
-                        </span>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="sigTechClear">
-                            <i class="ti ti-eraser me-1"></i>Hapus
-                        </button>
+            <div class="sig-pad-wrap">
+                <div class="sig-pad-label">Tanda Tangan Perwakilan Customer</div>
+                <div class="sig-canvas-container" id="sigCustWrap">
+                    <canvas id="sigCustCanvas" height="120"></canvas>
+                    <div class="sig-canvas-empty" id="sigCustEmpty">
+                        <i class="ti ti-pencil"></i> Tanda tangan di sini
                     </div>
                 </div>
-
-                {{-- Customer / site representative signature --}}
-                <div class="sig-pad-wrap">
-                    <div class="sig-pad-label">Tanda Tangan Perwakilan</div>
-                    <div class="sig-canvas-container" id="sigCustWrap">
-                        <canvas id="sigCustCanvas" height="120"></canvas>
-                        <div class="sig-canvas-empty" id="sigCustEmpty">
-                            <i class="ti ti-pencil"></i> Tanda tangan di sini
-                        </div>
-                    </div>
-                    <div class="sig-toolbar">
-                        <span class="sig-status" id="sigCustStatus">
-                            <i class="ti ti-clock"></i> Belum ditandatangani
-                        </span>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" id="sigCustClear">
-                            <i class="ti ti-eraser me-1"></i>Hapus
-                        </button>
-                    </div>
+                <div class="sig-toolbar">
+                    <span class="sig-status" id="sigCustStatus">
+                        <i class="ti ti-clock"></i> Belum ditandatangani
+                    </span>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="sigCustClear">
+                        <i class="ti ti-eraser me-1"></i>Hapus
+                    </button>
                 </div>
-
             </div>
         </div>
 
@@ -586,7 +561,6 @@ $(function () {
         });
     }
 
-    SigPad('sigTechCanvas', 'h_sig_tech', 'sigTechWrap', 'sigTechEmpty', 'sigTechStatus', 'sigTechClear', @json($userSignature ?? null));
     SigPad('sigCustCanvas', 'h_sig_cust', 'sigCustWrap', 'sigCustEmpty', 'sigCustStatus', 'sigCustClear');
 
     /* ══════════════════════════════
@@ -614,14 +588,9 @@ $(function () {
             $('#p_desc').text('Belum diisi…').addClass('empty');
         }
 
-        // Signatures
-        var sigTech = !!$('#h_sig_tech').val();
-        var sigCust = !!$('#h_sig_cust').val();
-        if (sigTech || sigCust) {
-            var parts = [];
-            if (sigTech) parts.push('Teknisi ✓');
-            if (sigCust) parts.push('Perwakilan ✓');
-            $('#p_sigStatus').text(parts.join(' · '));
+        // Signature
+        if ($('#h_sig_cust').val()) {
+            $('#p_sigStatus').text('Perwakilan ✓');
             $('#p_sigSection').show();
         } else {
             $('#p_sigSection').hide();
@@ -650,9 +619,8 @@ $(function () {
         $btn.prop('disabled', true).html('<i class="ti ti-loader me-1"></i>Menyimpan offline…');
 
         var taskId    = $('#f_task').val();
-        var desc      = $('#f_desc').val();
-        var sigTech   = $('#h_sig_tech').val() || '';
-        var sigCust   = $('#h_sig_cust').val() || '';
+        var desc    = $('#f_desc').val();
+        var sigCust = $('#h_sig_cust').val() || '';
         var csrfToken = $('meta[name="csrf-token"]').attr('content');
 
         var req = indexedDB.open('siprt-offline', 1);
@@ -667,7 +635,6 @@ $(function () {
             var item = {
                 task_id:        taskId,
                 description:    desc,
-                signature_tech: sigTech,
                 signature_cust: sigCust,
                 csrf_token:     csrfToken,
             };

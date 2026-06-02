@@ -139,7 +139,11 @@ Tasks support multiple assignees via a `task_user` pivot table (task_id, user_id
 
 ### Laporan (Report) — key behaviour
 
-**`reports` table columns:** `task_id`, `user_id`, `description`, `status` (draft|submitted|approved), `photos` (JSON array of paths), `signature_tech` (base64 dataURL), `signature_cust` (base64 dataURL), `template_data` (JSON `{field_id: value}`), timestamps. No `photo` (singular) column — migrated to `photos` array in `2026_06_02_000002`.
+**`reports` table columns:** `task_id`, `user_id`, `description`, `status` (draft|submitted|approved), `photos` (JSON array of paths), `signature_cust` (file path string), `template_data` (JSON `{field_id: value}`), timestamps. No `photo` (singular) or `signature_tech` columns — both removed by migrations `2026_06_02_000002` and `2026_06_02_000003`.
+
+**Signatures:**
+- `signature_tech` is gone from `reports` — the technician's signature is read at display time from `$laporan->teknisi->signature` (stored in `users.signature` as a file path). Never save tech sig on the report.
+- `signature_cust` stores a **file path** (e.g. `signatures/{sha256}.png`), never a base64 string. Saving is handled by `LaporanController::saveSig(string $base64): string` — decodes base64, writes PNG to `storage/app/public/signatures/`, returns the path. Display: `asset('storage/' . $laporan->signature_cust)`. PDF: `public_path('storage/' . $laporan->signature_cust)`.
 
 **Status flow:**
 - `LaporanController@store`: if `signature_cust` is present → `status = submitted`, task → `completed`, `TaskCompletedNotification` sent. If absent → `status = draft`, task stays `in_progress`, no notification.

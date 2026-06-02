@@ -113,18 +113,18 @@
             </div>
         </div>
 
-        @if($laporan->signature_tech || $laporan->signature_cust)
+        @if($laporan->teknisi?->signature || $laporan->signature_cust)
         <div class="report-info-card mb-3">
             <div class="report-info-card-header">
                 <i class="ti ti-writing"></i> Tanda Tangan
             </div>
             <div class="report-info-card-body">
                 <div class="row g-3">
-                    @if($laporan->signature_tech)
+                    @if($laporan->teknisi?->signature)
                     <div class="col-6">
                         <div class="report-field">
                             <span class="report-field-key">Teknisi</span>
-                            <img src="{{ $laporan->signature_tech }}" alt="TTD Teknisi"
+                            <img src="{{ asset('storage/' . $laporan->teknisi->signature) }}" alt="TTD Teknisi"
                                  style="max-height:80px;border:1px solid var(--border);border-radius:var(--radius-md);padding:4px;background:#fff;">
                         </div>
                     </div>
@@ -133,7 +133,7 @@
                     <div class="col-6">
                         <div class="report-field">
                             <span class="report-field-key">Customer</span>
-                            <img src="{{ $laporan->signature_cust }}" alt="TTD Customer"
+                            <img src="{{ asset('storage/' . $laporan->signature_cust) }}" alt="TTD Customer"
                                  style="max-height:80px;border:1px solid var(--border);border-radius:var(--radius-md);padding:4px;background:#fff;">
                         </div>
                     </div>

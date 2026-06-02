@@ -48,9 +48,9 @@ class ReportController extends Controller
             'id'             => $report->id,
             'description'    => $report->description,
             'status'         => $report->status,
-            'photo_url'      => !empty($report->photos) ? asset('storage/' . $report->photos[0]) : null,
-            'signature_tech' => $report->signature_tech,
-            'signature_cust' => $report->signature_cust,
+            'photo_url'          => !empty($report->photos) ? asset('storage/' . $report->photos[0]) : null,
+            'signature_tech_url' => $report->teknisi?->signature ? asset('storage/' . $report->teknisi->signature) : null,
+            'signature_cust_url' => $report->signature_cust ? asset('storage/' . $report->signature_cust) : null,
             'task'           => [
                 'id'       => $report->task->id,
                 'title'    => $report->task->title,
@@ -88,11 +88,20 @@ class ReportController extends Controller
         ];
 
         if ($request->filled('photo_base64')) {
-            $imageData = preg_replace('/^data:image\/\w+;base64,/', '', $request->photo_base64);
-            $imageData = base64_decode($imageData);
-            $filename  = 'laporan/' . uniqid('rpt_', true) . '.jpg';
-            Storage::disk('public')->put($filename, $imageData);
+            $imgData  = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $request->photo_base64));
+            $filename = 'laporan/' . uniqid('rpt_', true) . '.jpg';
+            Storage::disk('public')->put($filename, $imgData);
             $data['photos'] = [$filename];
+        }
+
+        if ($request->filled('signature_cust')) {
+            $imgData = base64_decode(preg_replace('/^data:image\/\w+;base64,/', '', $request->signature_cust));
+            $hash    = hash('sha256', $imgData);
+            $path    = 'signatures/' . $hash . '.png';
+            if (!Storage::disk('public')->exists($path)) {
+                Storage::disk('public')->put($path, $imgData);
+            }
+            $data['signature_cust'] = $path;
         }
 
         $report = Report::create($data);

@@ -153,14 +153,13 @@
     @endif
 
     {{-- Signatures --}}
-    @if($laporan->signature_tech || $laporan->signature_cust)
     <div class="section-title">Tanda Tangan</div>
     <table class="sig-table">
         <tr>
             <td>
                 <div class="sig-label">Teknisi</div>
-                @if($laporan->signature_tech)
-                    <img class="sig-img" src="{{ $laporan->signature_tech }}" alt="TTD Teknisi">
+                @if($laporan->teknisi?->signature)
+                    <img class="sig-img" src="{{ public_path('storage/' . $laporan->teknisi->signature) }}" alt="TTD Teknisi">
                 @else
                     <div style="height:80px;"></div>
                 @endif
@@ -169,7 +168,7 @@
             <td>
                 <div class="sig-label">Customer / Penerima</div>
                 @if($laporan->signature_cust)
-                    <img class="sig-img" src="{{ $laporan->signature_cust }}" alt="TTD Customer">
+                    <img class="sig-img" src="{{ public_path('storage/' . $laporan->signature_cust) }}" alt="TTD Customer">
                 @else
                     <div style="height:80px;"></div>
                 @endif
@@ -177,22 +176,6 @@
             </td>
         </tr>
     </table>
-    @else
-    <table class="sig-table">
-        <tr>
-            <td>
-                <div class="sig-label">Teknisi</div>
-                <div style="height:80px;"></div>
-                <div class="sig-line">{{ $laporan->teknisi->name }}</div>
-            </td>
-            <td>
-                <div class="sig-label">Customer / Penerima</div>
-                <div style="height:80px;"></div>
-                <div class="sig-line">{{ $laporan->task->customer->name }}</div>
-            </td>
-        </tr>
-    </table>
-    @endif
 
     {{-- Footer --}}
     <div class="footer">

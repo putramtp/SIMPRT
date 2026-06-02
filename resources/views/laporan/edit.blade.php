@@ -123,7 +123,7 @@
                 @elseif($laporan->signature_cust)
                 <div class="mb-3">
                     <label class="form-label">Tanda Tangan Customer</label>
-                    <img src="{{ $laporan->signature_cust }}" alt="TTD Customer"
+                    <img src="{{ asset('storage/' . $laporan->signature_cust) }}" alt="TTD Customer"
                          style="max-height:80px;border:1px solid var(--border);border-radius:6px;padding:4px;background:#fff;display:block;">
                 </div>
                 @endif

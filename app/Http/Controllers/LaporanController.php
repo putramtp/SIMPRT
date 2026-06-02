@@ -9,6 +9,7 @@ use App\Notifications\TaskCompletedNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Yajra\DataTables\Facades\DataTables;
 
 class LaporanController extends Controller
@@ -59,9 +60,6 @@ class LaporanController extends Controller
             ->whereNotIn('id', $submittedTaskIds)
             ->with(['customer', 'template'])
             ->get();
-        $userSignature = Auth::user()->signature
-            ? asset('storage/' . Auth::user()->signature)
-            : null;
         $taskTemplates = $tasks->mapWithKeys(function ($task) {
             if (!$task->template_id || !$task->template) return [$task->id => null];
             return [$task->id => [
@@ -69,7 +67,7 @@ class LaporanController extends Controller
                 'sections' => $task->template->fields ?? [],
             ]];
         })->toArray();
-        return view('laporan.create', compact('tasks', 'userSignature', 'taskTemplates'));
+        return view('laporan.create', compact('tasks', 'taskTemplates'));
     }
 
     public function store(Request $request)
@@ -93,8 +91,9 @@ class LaporanController extends Controller
             'status'      => $hasCustSig ? 'submitted' : 'draft',
         ];
 
-        if ($request->filled('signature_tech')) $data['signature_tech'] = $request->signature_tech;
-        if ($hasCustSig)                        $data['signature_cust'] = $request->signature_cust;
+        if ($hasCustSig) {
+            $data['signature_cust'] = $this->saveSig($request->signature_cust);
+        }
         if ($request->has('template_data'))     $data['template_data']  = $request->template_data;
 
         if ($request->hasFile('photos')) {
@@ -158,7 +157,7 @@ class LaporanController extends Controller
         ];
 
         if ($request->filled('signature_cust')) {
-            $data['signature_cust'] = $request->signature_cust;
+            $data['signature_cust'] = $this->saveSig($request->signature_cust);
             if ($laporan->status === 'draft') {
                 $data['status'] = 'submitted';
             }
@@ -203,5 +202,18 @@ class LaporanController extends Controller
         $pdf = Pdf::loadView('laporan.pdf', compact('laporan'))->setPaper('A4', 'portrait');
         $filename = 'laporan-' . $laporan->id . '-' . now()->format('Ymd') . '.pdf';
         return $pdf->download($filename);
+    }
+
+    private function saveSig(string $base64): string
+    {
+        $imgData = base64_decode(
+            preg_replace('/^data:image\/\w+;base64,/', '', $base64)
+        );
+        $hash = hash('sha256', $imgData);
+        $path = 'signatures/' . $hash . '.png';
+        if (!Storage::disk('public')->exists($path)) {
+            Storage::disk('public')->put($path, $imgData);
+        }
+        return $path;
     }
 }
