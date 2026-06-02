@@ -9,7 +9,9 @@ class Report extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['task_id', 'user_id', 'description', 'status', 'photo', 'signature_tech', 'signature_cust'];
+    protected $fillable = ['task_id', 'user_id', 'description', 'status', 'photos', 'signature_tech', 'signature_cust', 'template_data'];
+
+    protected $casts = ['photos' => 'array', 'template_data' => 'array'];
 
     public function task()
     {

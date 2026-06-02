@@ -39,49 +39,89 @@ class LaporanController extends Controller
 
     public function create()
     {
+        // Redirect to edit if a draft already exists for the requested task
+        if ($taskId = request('task_id')) {
+            $draft = Report::where('user_id', Auth::id())
+                ->where('task_id', $taskId)
+                ->where('status', 'draft')
+                ->first();
+            if ($draft) {
+                return redirect()->route('laporan.edit', $draft)
+                    ->with('info', 'Laporan draft ditemukan. Tambahkan tanda tangan customer untuk mengirim.');
+            }
+        }
+
+        $submittedTaskIds = Report::where('user_id', Auth::id())
+            ->where('status', 'submitted')
+            ->pluck('task_id');
         $tasks = Task::whereHas('assignees', fn($q) => $q->where('users.id', Auth::id()))
             ->whereIn('status', ['pending', 'in_progress'])
-            ->with('customer')
+            ->whereNotIn('id', $submittedTaskIds)
+            ->with(['customer', 'template'])
             ->get();
         $userSignature = Auth::user()->signature
             ? asset('storage/' . Auth::user()->signature)
             : null;
-        return view('laporan.create', compact('tasks', 'userSignature'));
+        $taskTemplates = $tasks->mapWithKeys(function ($task) {
+            if (!$task->template_id || !$task->template) return [$task->id => null];
+            return [$task->id => [
+                'name'     => $task->template->name,
+                'sections' => $task->template->fields ?? [],
+            ]];
+        })->toArray();
+        return view('laporan.create', compact('tasks', 'userSignature', 'taskTemplates'));
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
             'task_id'        => 'required|exists:tasks,id',
             'description'    => 'required|string',
-            'photo'          => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+            'photos'         => 'nullable|array|max:10',
+            'photos.*'       => 'image|mimes:jpeg,jpg,png,gif,webp|max:2048',
             'signature_tech' => 'nullable|string',
             'signature_cust' => 'nullable|string',
+            'template_data'  => 'nullable|array',
         ]);
 
-        $validated['user_id'] = Auth::id();
-        $validated['status']  = 'submitted';
+        $hasCustSig = $request->filled('signature_cust');
 
-        if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('laporan', 'public');
+        $data = [
+            'task_id'     => $request->task_id,
+            'description' => $request->description,
+            'user_id'     => Auth::id(),
+            'status'      => $hasCustSig ? 'submitted' : 'draft',
+        ];
+
+        if ($request->filled('signature_tech')) $data['signature_tech'] = $request->signature_tech;
+        if ($hasCustSig)                        $data['signature_cust'] = $request->signature_cust;
+        if ($request->has('template_data'))     $data['template_data']  = $request->template_data;
+
+        if ($request->hasFile('photos')) {
+            $paths = [];
+            foreach ($request->file('photos') as $file) {
+                $paths[] = $file->store('laporan', 'public');
+            }
+            $data['photos'] = $paths;
         }
 
-        // Store non-empty signatures only
-        if (empty($validated['signature_tech'])) unset($validated['signature_tech']);
-        if (empty($validated['signature_cust'])) unset($validated['signature_cust']);
+        $report = Report::create($data);
 
-        $report = Report::create($validated);
+        if ($hasCustSig) {
+            Task::where('id', $data['task_id'])->update(['status' => 'completed']);
+            $report->load(['task.customer', 'teknisi']);
+            User::role(['admin', 'sales'])->get()
+                ->each(fn($u) => $u->notify(new TaskCompletedNotification($report)));
+            return redirect()->route('laporan.index')->with('success', 'Laporan berhasil dikirim.');
+        }
 
-        $report->load(['task.customer', 'teknisi']);
-        User::role(['admin', 'sales'])->get()
-            ->each(fn($u) => $u->notify(new TaskCompletedNotification($report)));
-
-        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil dikirim.');
+        return redirect()->route('laporan.index')
+            ->with('info', 'Laporan tersimpan sebagai draft. Tambahkan tanda tangan customer untuk mengirim.');
     }
 
     public function show(Report $laporan)
     {
-        $laporan->load(['task.customer', 'teknisi']);
+        $laporan->load(['task.customer', 'task.template', 'teknisi']);
         return view('laporan.show', compact('laporan'));
     }
 
@@ -104,19 +144,47 @@ class LaporanController extends Controller
             403
         );
 
-        $validated = $request->validate([
-            'description' => 'required|string',
-            'status'      => 'required|in:draft,submitted,approved',
-            'photo'       => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+        $request->validate([
+            'description'    => 'required|string',
+            'status'         => 'nullable|in:draft,submitted,approved',
+            'photos'         => 'nullable|array|max:10',
+            'photos.*'       => 'image|mimes:jpeg,jpg,png,gif,webp|max:2048',
+            'signature_cust' => 'nullable|string',
         ]);
 
-        if ($request->hasFile('photo')) {
-            $validated['photo'] = $request->file('photo')->store('laporan', 'public');
+        $data = [
+            'description' => $request->description,
+            'status'      => $request->input('status', $laporan->status),
+        ];
+
+        if ($request->filled('signature_cust')) {
+            $data['signature_cust'] = $request->signature_cust;
+            if ($laporan->status === 'draft') {
+                $data['status'] = 'submitted';
+            }
         }
 
-        $laporan->update($validated);
+        if ($request->hasFile('photos')) {
+            $paths = [];
+            foreach ($request->file('photos') as $file) {
+                $paths[] = $file->store('laporan', 'public');
+            }
+            $data['photos'] = $paths;
+        }
 
-        return redirect()->route('laporan.index')->with('success', 'Laporan berhasil diperbarui.');
+        $justSubmitted = $laporan->status !== 'submitted' && ($data['status'] === 'submitted');
+
+        $laporan->update($data);
+
+        if ($justSubmitted) {
+            Task::where('id', $laporan->task_id)->update(['status' => 'completed']);
+            $laporan->load(['task.customer', 'teknisi']);
+            User::role(['admin', 'sales'])->get()
+                ->each(fn($u) => $u->notify(new TaskCompletedNotification($laporan)));
+        }
+
+        $msg = $justSubmitted ? 'Laporan berhasil dikirim.' : 'Laporan berhasil diperbarui.';
+        return redirect()->route('laporan.index')->with('success', $msg);
     }
 
     public function destroy(Report $laporan)
@@ -131,7 +199,7 @@ class LaporanController extends Controller
 
     public function pdf(Report $laporan)
     {
-        $laporan->load(['task.customer', 'teknisi']);
+        $laporan->load(['task.customer', 'task.template', 'teknisi']);
         $pdf = Pdf::loadView('laporan.pdf', compact('laporan'))->setPaper('A4', 'portrait');
         $filename = 'laporan-' . $laporan->id . '-' . now()->format('Ymd') . '.pdf';
         return $pdf->download($filename);

@@ -76,6 +76,7 @@
 .bar-yellow { background: var(--yellow); }
 .bar-gray   { background: var(--border); }
 .bar-green  { background: var(--green); }
+.bar-orange { background: var(--orange); }
 
 .tek-card-body { padding: 12px; }
 .tek-card-head {
@@ -89,9 +90,10 @@
     border-radius: 20px; padding: 2px 8px;
     font-size: 10px; font-weight: 600; white-space: nowrap; flex-shrink: 0;
 }
-.badge-in_progress { background: var(--blue-light);   color: #0C447C; }
-.badge-pending     { background: var(--yellow-light); color: #633806; }
-.badge-completed   { background: var(--green-light);  color: #27500A; }
+.badge-in_progress { background: var(--blue-light);          color: #0C447C; }
+.badge-pending     { background: var(--yellow-light);         color: #633806; }
+.badge-completed   { background: var(--green-light);          color: #27500A; }
+.badge-draft       { background: rgba(255,107,53,.13);        color: #c24800; }
 
 .tek-meta { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
 .tek-meta-row {
@@ -162,8 +164,12 @@
              : ($hour < 18 ? 'Selamat sore' : 'Selamat malam'));
     $initial = strtoupper(mb_substr(Auth::user()->name, 0, 2));
 
-    $activeTasks    = $myTasks->whereIn('status', ['pending', 'in_progress']);
-    $completedCount = $myTasks->where('status', 'completed')->count();
+    // Exclude tasks that already have a submitted report from this technician
+    $activeTasks    = $myTasks->filter(fn($t) =>
+        in_array($t->status, ['pending', 'in_progress']) &&
+        $t->reports->where('status', 'submitted')->isEmpty()
+    );
+    $completedCount = $myTasks->count() - $activeTasks->count();
 
     // in_progress first, then pending
     $sorted = $activeTasks->sortBy(fn($t) => $t->status === 'in_progress' ? 0 : 1)->values();
@@ -223,17 +229,23 @@
 
 @forelse($sorted as $task)
 @php
-    $bar   = $task->status === 'in_progress' ? 'bar-blue' : 'bar-yellow';
-    $label = $task->status === 'in_progress' ? 'Berlangsung' : 'Menunggu';
-    $addr  = $task->customer->address ?? $task->customer->name;
-    $mapsQ = urlencode($addr);
+    $draftReport = $task->reports->where('status', 'draft')->first();
+    $hasDraft    = $draftReport !== null;
+    $bar         = $hasDraft ? 'bar-orange'
+                 : ($task->status === 'in_progress' ? 'bar-blue' : 'bar-yellow');
+    $badgeCls    = $hasDraft ? 'badge-draft'
+                 : 'badge-' . $task->status;
+    $label       = $hasDraft ? 'Draft'
+                 : ($task->status === 'in_progress' ? 'Berlangsung' : 'Menunggu');
+    $addr        = $task->customer->address ?? $task->customer->name;
+    $mapsQ       = urlencode($addr);
 @endphp
 <div class="tek-card">
     <div class="tek-card-bar {{ $bar }}"></div>
     <div class="tek-card-body">
         <div class="tek-card-head">
             <a href="{{ route('tugas.show', $task) }}" class="tek-card-title">{{ $task->title }}</a>
-            <span class="tek-badge badge-{{ $task->status }}">{{ $label }}</span>
+            <span class="tek-badge {{ $badgeCls }}">{{ $label }}</span>
         </div>
         <div class="tek-meta">
             <div class="tek-meta-row">
@@ -258,7 +270,11 @@
                target="_blank" rel="noopener" class="tek-btn-nav" style="flex:1;">
                 <i class="ti ti-map"></i> Navigasi
             </a>
-            @if($task->status === 'in_progress')
+            @if($hasDraft)
+                <a href="{{ route('laporan.edit', $draftReport) }}" class="tek-btn-warning" style="flex:1;background:var(--orange);color:#fff;border:none;">
+                    <i class="ti ti-signature"></i> Lengkapi
+                </a>
+            @elseif($task->status === 'in_progress')
                 <a href="{{ route('laporan.create', ['task_id' => $task->id]) }}" class="tek-btn-primary" style="flex:1;">
                     <i class="ti ti-file-plus"></i> Isi Laporan
                 </a>

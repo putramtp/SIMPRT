@@ -81,8 +81,12 @@ class DashboardController extends Controller
 
     public function teknisiMy()
     {
-        $myTasks   = Task::whereHas('assignees', fn($q) => $q->where('users.id', Auth::id()))->with('customer')->latest()->get();
-        $myReports = Report::where('user_id', Auth::id())->with('task.customer')->latest()->take(5)->get();
+        $userId    = Auth::id();
+        $myTasks   = Task::whereHas('assignees', fn($q) => $q->where('users.id', $userId))
+            ->with(['customer', 'reports' => fn($q) => $q->where('user_id', $userId)])
+            ->latest()
+            ->get();
+        $myReports = Report::where('user_id', $userId)->with('task.customer')->latest()->take(5)->get();
 
         return view('dashboard.teknisi-my', compact('myTasks', 'myReports'));
     }

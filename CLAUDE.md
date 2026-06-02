@@ -8,7 +8,7 @@ Guidance for Claude Code when working in this repository.
 
 **SIPRT** — Laravel 10 task assignment & technician reporting system.
 **Stack:** Laravel 10, PHP 8.1+, MySQL (`db_siprt`), Bootstrap 5 CDN, jQuery 3.7.1 CDN, Yajra DataTables, Spatie Permission v6, barryvdh/laravel-dompdf, Laravel Sanctum.
-**All 5 development phases complete + post-phase improvements (latest: customer portal separation, multi-assignee tasks — 2026-05-26). Next: deployment.**
+**All 5 development phases complete + post-phase improvements (latest: multi-photo upload, template fields on laporan form, draft/submit flow — 2026-06-02). Next: deployment.**
 
 ### Actors
 
@@ -137,10 +137,25 @@ Tasks support multiple assignees via a `task_user` pivot table (task_id, user_id
 - `edit.blade.php` — checkboxes `name="assignees[]"` pre-checked from `$selectedTeknisi`
 - DataTables `assignee_name` column uses `$t->assignees->pluck('name')->join(', ')` (computed, not orderable/searchable)
 
+### Laporan (Report) — key behaviour
+
+**`reports` table columns:** `task_id`, `user_id`, `description`, `status` (draft|submitted|approved), `photos` (JSON array of paths), `signature_tech` (base64 dataURL), `signature_cust` (base64 dataURL), `template_data` (JSON `{field_id: value}`), timestamps. No `photo` (singular) column — migrated to `photos` array in `2026_06_02_000002`.
+
+**Status flow:**
+- `LaporanController@store`: if `signature_cust` is present → `status = submitted`, task → `completed`, `TaskCompletedNotification` sent. If absent → `status = draft`, task stays `in_progress`, no notification.
+- `LaporanController@update`: if `signature_cust` is added to a `draft` → auto-sets `status = submitted`, marks task `completed`, sends notification.
+- `LaporanController@create`: if a draft already exists for the requested `task_id`, redirects to `laporan.edit` for that draft instead of showing the create form.
+
+**Dashboard (`teknisiMy`):** active tasks = `pending/in_progress` tasks with no `submitted` report from the current user. Tasks with a `draft` report stay in the active list with an orange bar + "Draft" badge + "Lengkapi" button → `laporan.edit`. `DashboardController@teknisiMy` eager-loads `reports` scoped to `where('user_id', $userId)` so the view can check per-task report state.
+
+**Multi-photo upload:** `photos[]` multiple file input; stored as JSON array in `photos` column. Up to 10 photos. `laporan/show.blade.php` and `customer/laporan/show.blade.php` render a flex grid (1 photo = full width, 2+ = 50/50). PDF renders all photos sequentially. Thumbnail in list/card views uses `$report->photos[0]`. Edit view shows existing thumbnails and accepts new `photos[]` to replace them.
+
+**Template fields:** `LaporanController@create` eager-loads `task.template` and passes `$taskTemplates` (keyed by task ID) as JSON. When a task is selected, JS dynamically renders a "Formulir Tugas" card from the template's `sections → fields` structure. Supported types: `text`, `textarea`, `number`, `date`, `checkbox`, `select`; `photo`/`signature` template field types are skipped. Values submitted as `template_data[field_id]` → stored as JSON in `template_data`.
+
 ### DB Notifications
 - **`TaskAssignedNotification`** → all assignees: new task assigned (`TugasController@store`), only newly added on reassignment (`@update`)
 - **`TaskStartedNotification`** → admin+sales: teknisi clicked Mulai Tugas (`TugasController@start`); `teknisi_name` lists all assignees joined with `, `
-- **`TaskCompletedNotification`** → admin+sales: teknisi submitted laporan (`LaporanController@store`)
+- **`TaskCompletedNotification`** → admin+sales: teknisi submitted laporan with customer signature (`LaporanController@store` or `@update` when draft → submitted)
 - All use `via: ['database']`; stored in `notifications` table
 - `NotificationController` returns JSON: `{ notifications: [...], unread: n }`; each item has `id`, `data`, `read` (bool), `time` (human diff)
 - Notification data fields by type:

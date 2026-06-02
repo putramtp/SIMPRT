@@ -71,6 +71,51 @@
             </div>
         </div>
 
+        {{-- Template data --}}
+        @if($laporan->template_data && $laporan->task->template && count($laporan->template_data))
+        <div class="report-info-card mb-3">
+            <div class="report-info-card-header">
+                <i class="ti ti-layout-list"></i> {{ $laporan->task->template->name }}
+            </div>
+            <div class="report-info-card-body">
+                @foreach($laporan->task->template->fields as $section)
+                    @php $hasVisibleField = collect($section['fields'] ?? [])->contains(fn($f) => !in_array($f['type'], ['photo','signature'])); @endphp
+                    @if($hasVisibleField)
+                        @if(!empty($section['title']))
+                        <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--blue);margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid var(--border-light);">
+                            {{ $section['title'] }}
+                        </div>
+                        @endif
+                        <div class="row g-3 mb-2">
+                        @foreach($section['fields'] ?? [] as $field)
+                            @if(in_array($field['type'], ['photo','signature'])) @continue @endif
+                            <div class="col-12 col-sm-6">
+                                <div class="report-field">
+                                    <span class="report-field-key">{{ $field['label'] }}</span>
+                                    <span class="report-field-val">
+                                        @php $val = $laporan->template_data[$field['id']] ?? null; @endphp
+                                        @if($field['type'] === 'checkbox')
+                                            @if($val == '1' || $val === true)
+                                                <i class="ti ti-circle-check" style="color:var(--green);"></i> Ya
+                                            @else
+                                                <i class="ti ti-circle-x" style="color:var(--text-secondary);"></i> Tidak
+                                            @endif
+                                        @elseif($val !== null && $val !== '')
+                                            {{ $val }}
+                                        @else
+                                            <span style="color:var(--text-secondary);font-style:italic;">—</span>
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+                        @endforeach
+                        </div>
+                    @endif
+                @endforeach
+            </div>
+        </div>
+        @endif
+
         {{-- Task details --}}
         <div class="report-info-card mb-3">
             <div class="report-info-card-header">
@@ -161,32 +206,34 @@
     {{-- ── Aside: photo + actions ── --}}
     <div class="report-body-aside">
 
-        @if($laporan->photo)
+        @php $allPhotos = $laporan->photos ?? []; @endphp
         <div class="report-info-card mb-3">
             <div class="report-info-card-header">
                 <i class="ti ti-photo"></i> Foto Dokumentasi
+                @if(count($allPhotos) > 0)
+                <span style="margin-left:auto;font-size:.72rem;color:var(--text-secondary);">{{ count($allPhotos) }} foto</span>
+                @endif
             </div>
-            <div style="padding:.75rem;">
+            @if(count($allPhotos) > 0)
+            <div style="padding:.75rem;display:flex;flex-wrap:wrap;gap:8px;">
+                @foreach($allPhotos as $i => $photoPath)
                 <div class="photo-gallery-item"
-                     data-src="{{ asset('storage/' . $laporan->photo) }}"
-                     data-caption="Foto laporan — {{ $laporan->task->title }}">
-                    <img src="{{ asset('storage/' . $laporan->photo) }}" alt="Foto Laporan"
-                         style="width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius-md);">
+                     data-src="{{ asset('storage/' . $photoPath) }}"
+                     data-caption="Foto {{ $i + 1 }} — {{ $laporan->task->title }}"
+                     style="flex:0 0 auto;width:{{ count($allPhotos) === 1 ? '100%' : 'calc(50% - 4px)' }};cursor:pointer;position:relative;border-radius:var(--radius-md);overflow:hidden;">
+                    <img src="{{ asset('storage/' . $photoPath) }}" alt="Foto {{ $i + 1 }}"
+                         style="width:100%;height:{{ count($allPhotos) === 1 ? '260px' : '140px' }};object-fit:cover;display:block;">
                     <div class="photo-gallery-overlay"><i class="ti ti-zoom-in"></i></div>
                 </div>
+                @endforeach
             </div>
-        </div>
-        @else
-        <div class="report-info-card mb-3">
-            <div class="report-info-card-header">
-                <i class="ti ti-photo"></i> Foto Dokumentasi
-            </div>
+            @else
             <div style="padding:2rem;text-align:center;color:var(--text-secondary);">
                 <i class="ti ti-photo-off" style="font-size:2rem;opacity:.25;display:block;margin-bottom:.5rem;"></i>
                 <span style="font-size:.8rem;">Tidak ada foto</span>
             </div>
+            @endif
         </div>
-        @endif
 
         {{-- Actions card --}}
         <div class="report-info-card no-print">

@@ -50,11 +50,11 @@
          data-date="{{ $report->created_at->format('d M Y, H:i') }}"
          data-status="{{ $report->status }}"
          data-desc="{{ e($report->description) }}"
-         data-photo="{{ $report->photo ? asset('storage/' . $report->photo) : '' }}">
+         data-photo="{{ !empty($report->photos) ? asset('storage/' . $report->photos[0]) : '' }}">
 
         <div class="cust-report-thumb">
-            @if($report->photo)
-                <img src="{{ asset('storage/' . $report->photo) }}" alt="Foto Laporan">
+            @if(!empty($report->photos))
+                <img src="{{ asset('storage/' . $report->photos[0]) }}" alt="Foto Laporan">
             @else
                 <i class="ti ti-file-text"></i>
             @endif

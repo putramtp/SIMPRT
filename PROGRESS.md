@@ -179,3 +179,69 @@
 - `User` model: removed `customer_id` fillable and `customer()` relationship
 - `DashboardController`: removed `customer()` method (replaced by `CustomerDashboardController`)
 - `RolePermissionSeeder`: removed customer role
+
+---
+
+## Template Fields on Laporan Form + Multi-Photo Upload (2026-06-02) ✅
+
+### Template Fields on Technician Form
+- `LaporanController@create`: eager-loads `task.template`; passes `$taskTemplates` (JSON, keyed by task ID) to view
+- `laporan/create.blade.php`: when a task is selected, JS reads `taskTemplates[taskId]` and dynamically renders a "Formulir Tugas" card with all sections and fields from the template
+- Supported field types: `text`, `textarea`, `number`, `date`, `checkbox` (hidden+checkbox pair), `select` (options split by `\n` or `,`); `photo` and `signature` type fields are skipped (handled by dedicated sections)
+- Inputs named `template_data[field_id]`; submitted as `template_data` array
+- `LaporanController@store`: validates `template_data` as nullable array; stores in `template_data` JSON column
+- `laporan/show.blade.php`: "Formulir Tugas" card renders each field label + stored value; checkboxes shown as ✓/✗
+- `laporan/pdf.blade.php`: template data rendered as an `info-table` before photos section
+
+### Multiple Photo Upload
+- Migration `2026_06_02_000001_add_photos_template_data_to_reports_table`: adds `photos` (JSON) and `template_data` (JSON) columns to `reports` table
+- `Report` model: `photos` and `template_data` added to `$fillable`; cast as `array`
+- `laporan/create.blade.php`: photo input changed to `name="photos[]" multiple`; drag-drop zone accepts multiple files; thumbnails rendered in a flex grid with individual × remove buttons (up to 10 photos); file management via `filesArr` + `DataTransfer` + `syncFileInput()`
+- **Bug fixed**: in the `change` handler, `this.value = ''` was executing AFTER `syncFileInput()` had set the DataTransfer files, clearing them before form submission; fixed by capturing `Array.from(this.files)` first, then clearing, then pushing to `filesArr`
+- `LaporanController@store`: iterates `$request->file('photos')`, stores each to `laporan/` disk, saves JSON path array to `photos` column
+- `laporan/show.blade.php`: photos grid — single photo = full width 260px, multiple = 50/50 grid 140px; each photo clickable with lightbox; falls back to legacy `photo` column for old records
+- `laporan/pdf.blade.php`: all photos rendered sequentially; falls back to legacy `photo` column
+
+---
+
+## Consolidate `photo` → `photos`, Drop Single Column (2026-06-02) ✅
+
+- Migration `2026_06_02_000002_migrate_photo_to_photos_drop_column`: data-migrates existing `reports.photo` values into `photos` JSON array (`["path"]`), then drops the `photo` column entirely
+- `Report` model: removed `photo` from `$fillable`; only `photos` (cast: array) remains
+- `LaporanController@update`: accepts `photos[]` multiple, replaces existing `photos` array
+- `Api/ReportController`: `photo_url` in index/show returns `$r->photos[0]`; base64 store saves as `photos: [filename]`
+- `ReportFactory`: `photo => null` → `photos => null`
+- All views updated — no `->photo` references remain:
+  - `laporan/show.blade.php`, `laporan/pdf.blade.php`, `customer/laporan/show.blade.php`: `$allPhotos = $laporan->photos ?? []`
+  - `laporan/edit.blade.php`: shows current photo thumbnails + `photos[]` multiple input
+  - Card/list thumbnails (customer dashboard, laporan index, customer_public): use `$report->photos[0]`
+
+---
+
+## Task Auto-Complete + Dashboard Draft State (2026-06-02) ✅
+
+### Task Status Auto-Complete
+- `LaporanController@store`: after creating a submitted laporan, calls `Task::where('id', ...)->update(['status' => 'completed'])`
+- `LaporanController@create`: only excludes tasks with a **submitted** report from the dropdown (`whereNotIn` on submitted task IDs); if a **draft** exists for the requested `task_id`, redirects to `laporan.edit` for that draft
+- `LaporanController@update`: if draft report gets `signature_cust` added → auto-sets `status = submitted`, marks task `completed`, sends `TaskCompletedNotification`
+
+### Dashboard Teknisi/My — Draft Awareness
+- `DashboardController@teknisiMy`: eager-loads `reports` filtered to `where('user_id', $userId)` alongside each task
+- Active tasks filter: excludes tasks with a **submitted** report from current user (draft tasks remain visible)
+- Task cards for draft laporan: orange bar (`bar-orange`), `badge-draft` badge, **"Lengkapi"** button → `laporan.edit` for the draft
+- Tasks with submitted laporan: disappear from active list (status = `completed`), appear in "Riwayat Terbaru"
+
+---
+
+## Submit Button Moved to Form Bottom (2026-06-02) ✅
+
+- `laporan/create.blade.php`: removed submit + cancel from inside the "Isi Laporan" card; placed at the bottom of `sp-main` after the signature pads — teknisi fills task, template fields, photos, signatures, then submits
+
+---
+
+## Draft/Submit Flow — Customer Signature Required (2026-06-02) ✅
+
+- `LaporanController@store`: `signature_cust` present → `status = submitted`, task completed, admin/sales notified; `signature_cust` absent → `status = draft`, task stays `in_progress`, info flash message, no notification
+- `laporan/edit.blade.php` (draft mode): shows alert banner + customer signature canvas (SigPad); signing + saving triggers auto-submit in `update()` which marks task completed and notifies
+- Admin/sales retain full status dropdown in edit view; technician sees only the signature canvas when completing a draft
+- `teknisi-my` dashboard: draft tasks show orange "Draft" badge + "Lengkapi" (→ edit) instead of "Isi Laporan"

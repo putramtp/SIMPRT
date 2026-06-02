@@ -147,22 +147,34 @@
 
     <div class="report-body-aside">
 
-        @if($laporan->photo)
+        @php $allPhotos = $laporan->photos ?? []; @endphp
         <div class="report-info-card mb-3">
             <div class="report-info-card-header">
                 <i class="ti ti-photo"></i> Foto Dokumentasi
+                @if(count($allPhotos) > 0)
+                <span style="margin-left:auto;font-size:.72rem;color:var(--text-secondary);">{{ count($allPhotos) }} foto</span>
+                @endif
             </div>
-            <div style="padding:.75rem;">
+            @if(count($allPhotos) > 0)
+            <div style="padding:.75rem;display:flex;flex-wrap:wrap;gap:8px;">
+                @foreach($allPhotos as $i => $photoPath)
                 <div class="photo-gallery-item"
-                     data-src="{{ asset('storage/' . $laporan->photo) }}"
-                     data-caption="Foto laporan — {{ $laporan->task->title }}">
-                    <img src="{{ asset('storage/' . $laporan->photo) }}" alt="Foto Laporan"
-                         style="width:100%;max-height:280px;object-fit:cover;border-radius:var(--radius-md);">
+                     data-src="{{ asset('storage/' . $photoPath) }}"
+                     data-caption="Foto {{ $i + 1 }} — {{ $laporan->task->title }}"
+                     style="flex:0 0 auto;width:{{ count($allPhotos) === 1 ? '100%' : 'calc(50% - 4px)' }};cursor:pointer;position:relative;border-radius:var(--radius-md);overflow:hidden;">
+                    <img src="{{ asset('storage/' . $photoPath) }}" alt="Foto {{ $i + 1 }}"
+                         style="width:100%;height:{{ count($allPhotos) === 1 ? '260px' : '140px' }};object-fit:cover;display:block;">
                     <div class="photo-gallery-overlay"><i class="ti ti-zoom-in"></i></div>
                 </div>
+                @endforeach
             </div>
+            @else
+            <div style="padding:2rem;text-align:center;color:var(--text-secondary);">
+                <i class="ti ti-photo-off" style="font-size:2rem;opacity:.25;display:block;margin-bottom:.5rem;"></i>
+                <span style="font-size:.8rem;">Tidak ada foto</span>
+            </div>
+            @endif
         </div>
-        @endif
 
         <div class="report-info-card">
             <div class="report-info-card-header">

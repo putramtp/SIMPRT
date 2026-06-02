@@ -19,7 +19,8 @@
       "Bash(xargs grep -l \"processing\")",
       "Bash(Select-Object Name)",
       "Bash(New-Item -ItemType Directory -Force \"D:\\\\laravel-project\\\\SIPRT\\\\app\\\\Http\\\\Controllers\\\\Customer\\\\Auth\")",
-      "Bash(Out-Null)"
+      "Bash(Out-Null)",
+      "Bash(Get-Date *)"
     ]
   },
   "enabledPlugins": {

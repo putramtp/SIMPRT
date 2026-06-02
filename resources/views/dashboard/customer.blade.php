@@ -282,8 +282,8 @@
     <div class="cust-report-item-body">
         <div class="cust-report-item-head">
             <div style="display:flex;align-items:flex-start;gap:10px;flex:1;min-width:0;">
-                @if($report->photo)
-                    <img src="{{ asset('storage/' . $report->photo) }}"
+                @if(!empty($report->photos))
+                    <img src="{{ asset('storage/' . $report->photos[0]) }}"
                          alt="Foto" class="cust-report-photo">
                 @else
                     <div class="cust-report-photo-placeholder">

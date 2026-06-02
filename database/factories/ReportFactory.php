@@ -16,7 +16,7 @@ class ReportFactory extends Factory
             'user_id'     => $task->assigned_to,
             'description' => fake()->paragraphs(2, true),
             'status'      => fake()->randomElement(['draft', 'submitted', 'approved']),
-            'photo'       => null,
+            'photos'      => null,
         ];
     }
 

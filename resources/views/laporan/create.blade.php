@@ -63,12 +63,64 @@
     font-weight: 600;
 }
 .preview-divider { height: 1px; background: var(--border-light); }
-.preview-img-thumb {
-    border-radius: var(--radius-md);
+
+/* Multi-photo grid */
+.photos-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+.photo-thumb-item {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+}
+.photo-thumb-img {
+    width: 80px;
+    height: 80px;
     object-fit: cover;
-    width: 100%;
-    max-height: 120px;
-    display: none;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    display: block;
+}
+.photo-thumb-remove {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #e53e3e;
+    color: #fff;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    cursor: pointer;
+    z-index: 2;
+    padding: 0;
+    line-height: 1;
+}
+.photo-thumb-remove:hover { background: #c53030; }
+.photos-count {
+    font-size: .78rem;
+    color: var(--text-secondary);
+    margin-top: 6px;
+}
+
+/* Template fields */
+.template-section-heading {
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--blue);
+    padding: 0 0 6px;
+    border-bottom: 1px solid var(--border-light);
+    margin-bottom: 12px;
 }
 </style>
 @endsection
@@ -137,31 +189,30 @@
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label">Foto Dokumentasi <span class="text-muted">(opsional)</span></label>
+                    <label class="form-label">Foto Dokumentasi <span class="text-muted">(opsional · maks. 10 foto)</span></label>
                     {{-- Drag-drop zone --}}
                     <div class="drop-zone" id="dropZone">
-                        <input type="file" name="photo" id="f_photo" accept="image/*">
+                        <input type="file" name="photos[]" id="f_photos" accept="image/*" multiple>
                         <i class="ti ti-cloud-upload drop-zone-icon"></i>
                         <div class="drop-zone-title">Drag & drop foto di sini</div>
-                        <div class="drop-zone-sub">atau klik untuk memilih · JPG, PNG, WEBP · Maks. 2MB</div>
+                        <div class="drop-zone-sub">atau klik untuk memilih · JPG, PNG, WEBP · Maks. 2MB per foto</div>
                     </div>
-                    <div class="drop-zone-preview" id="dropPreview">
-                        <img id="dropPreviewImg" src="" alt="Preview">
-                        <button type="button" class="drop-zone-remove" id="dropRemove" title="Hapus foto">
-                            <i class="ti ti-x"></i>
-                        </button>
-                    </div>
-                    @error('photo')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                </div>
-
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        <i class="ti ti-send me-1"></i>Kirim Laporan
-                    </button>
-                    <a href="{{ route('laporan.index') }}" class="btn btn-outline-secondary">Batal</a>
+                    <div class="photos-grid" id="photosGrid"></div>
+                    <div class="photos-count" id="photosCount" style="display:none;"></div>
+                    @error('photos')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
+                    @error('photos.*')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
                 </div>
 
             </div>
+        </div>
+
+        {{-- Dynamic template fields (shown when selected task has a template) --}}
+        <div class="form-card" id="templateSection" style="display:none;">
+            <div class="form-card-header">
+                <i class="ti ti-layout-list"></i>
+                <span id="templateSectionTitle">Formulir Tugas</span>
+            </div>
+            <div class="form-card-body" id="templateFields"></div>
         </div>
 
         {{-- Signature canvas section --}}
@@ -213,6 +264,14 @@
             </div>
         </div>
 
+        {{-- Submit — bottom of form, after signatures --}}
+        <div class="d-flex gap-2 mt-2 mb-1">
+            <button type="submit" class="btn btn-primary" style="flex:1;">
+                <i class="ti ti-send me-1"></i>Kirim Laporan
+            </button>
+            <a href="{{ route('laporan.index') }}" class="btn btn-outline-secondary">Batal</a>
+        </div>
+
     </div>{{-- /.sp-main --}}
 
     {{-- ── Live preview (aside, 45%) ── --}}
@@ -243,7 +302,11 @@
                 <div class="preview-divider"></div>
                 <div class="preview-section" id="p_photoSection" style="display:none;">
                     <span class="preview-section-key">Foto</span>
-                    <img class="preview-img-thumb" id="p_photoThumb" src="" alt="Preview">
+                    <span class="preview-section-val" id="p_photoCount"></span>
+                </div>
+                <div class="preview-section" id="p_templateSection" style="display:none;">
+                    <span class="preview-section-key">Formulir</span>
+                    <span class="preview-section-val" id="p_templateCount"></span>
                 </div>
                 <div class="preview-section" id="p_sigSection" style="display:none;">
                     <span class="preview-section-key">Tanda Tangan</span>
@@ -263,13 +326,13 @@
 $(function () {
 
     /* ══════════════════════════════
-       DRAG-DROP UPLOAD
+       MULTIPLE PHOTO UPLOAD
     ══════════════════════════════ */
-    var $zone     = $('#dropZone');
-    var $input    = $('#f_photo');
-    var $preview  = $('#dropPreview');
-    var $previewImg = $('#dropPreviewImg');
-    var $remove   = $('#dropRemove');
+    var $zone       = $('#dropZone');
+    var $input      = $('#f_photos');
+    var $grid       = $('#photosGrid');
+    var $countLabel = $('#photosCount');
+    var filesArr    = []; // Array<File>
 
     $zone.on('dragover dragenter', function(e) {
         e.preventDefault(); e.stopPropagation();
@@ -278,43 +341,152 @@ $(function () {
         e.preventDefault(); e.stopPropagation();
         $zone.removeClass('drag-active');
     }).on('drop', function(e) {
-        var file = e.originalEvent.dataTransfer.files[0];
-        if (file && file.type.startsWith('image/')) {
-            setFile(file);
-        }
+        var files = e.originalEvent.dataTransfer.files;
+        addFiles(files);
     });
 
     $input.on('change', function() {
-        if (this.files[0]) setFile(this.files[0]);
+        var captured = Array.from(this.files); // copy refs before clearing
+        this.value = '';                        // reset so same file can be re-selected
+        captured.forEach(function(f) {
+            if (f.type.startsWith('image/') && filesArr.length < 10) {
+                filesArr.push(f);
+            }
+        });
+        renderGrid();
     });
 
-    $remove.on('click', function() {
-        $input.val('');
-        $preview.hide();
-        $previewImg.attr('src', '');
-        $('#p_photoSection').hide();
-        $('#p_photoThumb').hide().attr('src', '');
-        syncPreview();
-    });
+    function addFiles(fileList) {
+        Array.from(fileList).forEach(function(f) {
+            if (f.type.startsWith('image/') && filesArr.length < 10) {
+                filesArr.push(f);
+            }
+        });
+        renderGrid();
+    }
 
-    function setFile(file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            $previewImg.attr('src', e.target.result);
-            $preview.show();
-            // Update live preview
-            $('#p_photoThumb').attr('src', e.target.result).show();
+    function renderGrid() {
+        $grid.empty();
+        filesArr.forEach(function(file, idx) {
+            var url  = URL.createObjectURL(file);
+            var $item = $('<div class="photo-thumb-item">'
+                + '<img class="photo-thumb-img" src="' + url + '" alt="foto ' + (idx+1) + '">'
+                + '<button type="button" class="photo-thumb-remove" data-idx="' + idx + '" title="Hapus foto">'
+                + '<i class="ti ti-x"></i></button>'
+                + '</div>');
+            $grid.append($item);
+        });
+
+        if (filesArr.length > 0) {
+            $countLabel.text(filesArr.length + ' foto dipilih').show();
             $('#p_photoSection').show();
-        };
-        reader.readAsDataURL(file);
-
-        // Sync the actual input file (for drop case)
-        if ($input[0].files[0] !== file) {
-            var dt = new DataTransfer();
-            dt.items.add(file);
-            $input[0].files = dt.files;
+            $('#p_photoCount').text(filesArr.length + ' foto');
+        } else {
+            $countLabel.hide();
+            $('#p_photoSection').hide();
         }
+        syncFileInput();
         syncPreview();
+    }
+
+    function syncFileInput() {
+        var dt = new DataTransfer();
+        filesArr.forEach(function(f) { dt.items.add(f); });
+        document.getElementById('f_photos').files = dt.files;
+    }
+
+    $grid.on('click', '.photo-thumb-remove', function() {
+        var idx = parseInt($(this).data('idx'), 10);
+        filesArr.splice(idx, 1);
+        renderGrid();
+    });
+
+    /* ══════════════════════════════
+       TEMPLATE FIELDS
+    ══════════════════════════════ */
+    var taskTemplates = @json($taskTemplates);
+
+    function renderTemplate(taskId) {
+        var tpl = taskId ? taskTemplates[taskId] : null;
+        if (!tpl || !tpl.sections || tpl.sections.length === 0) {
+            $('#templateSection').hide();
+            $('#p_templateSection').hide();
+            return;
+        }
+        $('#templateSection').show();
+        $('#templateSectionTitle').text(tpl.name);
+
+        var $body = $('#templateFields').empty();
+        var fieldCount = 0;
+
+        tpl.sections.forEach(function(section) {
+            var fields = section.fields || [];
+            var visibleFields = fields.filter(function(f) {
+                return f.type !== 'photo' && f.type !== 'signature';
+            });
+            if (visibleFields.length === 0) return;
+
+            if (section.title) {
+                $body.append('<div class="template-section-heading">' + escHtml(section.title) + '</div>');
+            }
+            visibleFields.forEach(function(field) {
+                $body.append(buildField(field));
+                fieldCount++;
+            });
+        });
+
+        if (fieldCount === 0) {
+            $('#templateSection').hide();
+            $('#p_templateSection').hide();
+        } else {
+            $('#p_templateSection').show();
+            $('#p_templateCount').text(fieldCount + ' field formulir');
+        }
+    }
+
+    function escHtml(str) {
+        return $('<span>').text(str || '').html();
+    }
+
+    function buildField(field) {
+        var name  = 'template_data[' + field.id + ']';
+        var req   = field.required ? ' required' : '';
+        var phAtt = field.placeholder ? ' placeholder="' + escHtml(field.placeholder) + '"' : '';
+        var label = '<label class="form-label">' + escHtml(field.label)
+            + (field.required ? ' <span class="text-danger">*</span>' : '') + '</label>';
+        var input = '';
+
+        switch (field.type) {
+            case 'text':
+                input = '<input type="text" name="' + name + '" class="form-control"' + phAtt + req + '>';
+                break;
+            case 'textarea':
+                input = '<textarea name="' + name + '" class="form-control" rows="3"' + phAtt + req + '></textarea>';
+                break;
+            case 'number':
+                input = '<input type="number" name="' + name + '" class="form-control"' + phAtt + req + '>';
+                break;
+            case 'date':
+                input = '<input type="date" name="' + name + '" class="form-control"' + req + '>';
+                break;
+            case 'checkbox':
+                return '<div class="mb-3"><div class="form-check">'
+                    + '<input type="hidden" name="' + name + '" value="0">'
+                    + '<input type="checkbox" name="' + name + '" value="1" class="form-check-input" id="td_' + field.id + '">'
+                    + '<label class="form-check-label" for="td_' + field.id + '">' + escHtml(field.label) + '</label>'
+                    + '</div></div>';
+            case 'select':
+                var opts = (field.options || '').split(/[\n,]/).map(function(o) { return o.trim(); }).filter(Boolean);
+                var optHtml = opts.map(function(o) {
+                    return '<option value="' + escHtml(o) + '">' + escHtml(o) + '</option>';
+                }).join('');
+                input = '<select name="' + name + '" class="form-select"' + req + '>'
+                    + '<option value="">-- Pilih --</option>' + optHtml + '</select>';
+                break;
+            default:
+                input = '<input type="text" name="' + name + '" class="form-control"' + phAtt + req + '>';
+        }
+        return '<div class="mb-3">' + label + input + '</div>';
     }
 
     /* ══════════════════════════════
@@ -391,7 +563,6 @@ $(function () {
             if (!drawing) return;
             drawing = false;
             ctx.closePath();
-            // Save to hidden input
             $hidden.val(canvas.toDataURL('image/png'));
             syncPreview();
         }
@@ -421,11 +592,6 @@ $(function () {
     /* ══════════════════════════════
        LIVE PREVIEW SYNC
     ══════════════════════════════ */
-    var statusLabels = {
-        submitted: '<i class="ti ti-send"></i> Terkirim',
-        approved:  '<i class="ti ti-circle-check"></i> Disetujui',
-    };
-
     function syncPreview() {
         var $taskOpt = $('#f_task option:selected');
         var taskText = $taskOpt.val() ? $taskOpt.text().split(' — ')[0] : '';
@@ -462,70 +628,65 @@ $(function () {
         }
     }
 
-    $('#f_task').on('change', syncPreview);
+    $('#f_task').on('change', function() {
+        syncPreview();
+        renderTemplate($(this).val());
+    });
     $('#f_desc').on('input', syncPreview);
 
+    // Init on load (task pre-selected)
+    var initTaskId = $('#f_task').val();
+    if (initTaskId) renderTemplate(initTaskId);
     syncPreview();
 
     /* ══════════════════════════════
        BACKGROUND SYNC (offline submit)
     ══════════════════════════════ */
     $('#laporanForm').on('submit', function(e) {
-        if (navigator.onLine) return; // online — normal submit
+        if (navigator.onLine) return;
 
         e.preventDefault();
         var $btn = $(this).find('[type=submit]');
         $btn.prop('disabled', true).html('<i class="ti ti-loader me-1"></i>Menyimpan offline…');
 
-        var taskId     = $('#f_task').val();
-        var desc       = $('#f_desc').val();
-        var sigTech    = $('#h_sig_tech').val() || '';
-        var sigCust    = $('#h_sig_cust').val() || '';
-        var csrfToken  = $('meta[name="csrf-token"]').attr('content');
-        var photoFile  = document.getElementById('f_photo').files[0] || null;
+        var taskId    = $('#f_task').val();
+        var desc      = $('#f_desc').val();
+        var sigTech   = $('#h_sig_tech').val() || '';
+        var sigCust   = $('#h_sig_cust').val() || '';
+        var csrfToken = $('meta[name="csrf-token"]').attr('content');
 
-        function saveAndSync(blobData, blobName) {
-            var req = indexedDB.open('siprt-offline', 1);
-            req.onupgradeneeded = function(ev) {
-                var db = ev.target.result;
-                if (!db.objectStoreNames.contains('laporan-queue')) {
-                    db.createObjectStore('laporan-queue', { keyPath: 'id', autoIncrement: true });
-                }
+        var req = indexedDB.open('siprt-offline', 1);
+        req.onupgradeneeded = function(ev) {
+            var db = ev.target.result;
+            if (!db.objectStoreNames.contains('laporan-queue')) {
+                db.createObjectStore('laporan-queue', { keyPath: 'id', autoIncrement: true });
+            }
+        };
+        req.onsuccess = function(ev) {
+            var db = ev.target.result;
+            var item = {
+                task_id:        taskId,
+                description:    desc,
+                signature_tech: sigTech,
+                signature_cust: sigCust,
+                csrf_token:     csrfToken,
             };
-            req.onsuccess = function(ev) {
-                var db = ev.target.result;
-                var item = {
-                    task_id:        taskId,
-                    description:    desc,
-                    signature_tech: sigTech,
-                    signature_cust: sigCust,
-                    csrf_token:     csrfToken,
-                    photo_blob:     blobData,
-                    photo_name:     blobName,
-                };
-                db.transaction('laporan-queue', 'readwrite').objectStore('laporan-queue').add(item);
+            db.transaction('laporan-queue', 'readwrite').objectStore('laporan-queue').add(item);
 
-                if ('serviceWorker' in navigator && 'SyncManager' in window) {
-                    navigator.serviceWorker.ready.then(function(sw) {
-                        return sw.sync.register('laporan-sync');
-                    }).then(function() {
-                        showOfflineToast('Laporan disimpan. Akan dikirim otomatis saat online.');
-                    }).catch(function() {
-                        showOfflineToast('Laporan disimpan offline.');
-                    });
-                } else {
-                    showOfflineToast('Laporan disimpan. Kirim ulang saat koneksi tersedia.');
-                }
+            if ('serviceWorker' in navigator && 'SyncManager' in window) {
+                navigator.serviceWorker.ready.then(function(sw) {
+                    return sw.sync.register('laporan-sync');
+                }).then(function() {
+                    showOfflineToast('Laporan disimpan. Akan dikirim otomatis saat online.');
+                }).catch(function() {
+                    showOfflineToast('Laporan disimpan offline.');
+                });
+            } else {
+                showOfflineToast('Laporan disimpan. Kirim ulang saat koneksi tersedia.');
+            }
 
-                $btn.prop('disabled', false).html('<i class="ti ti-send me-1"></i>Kirim Laporan');
-            };
-        }
-
-        if (photoFile) {
-            saveAndSync(photoFile, photoFile.name);
-        } else {
-            saveAndSync(null, null);
-        }
+            $btn.prop('disabled', false).html('<i class="ti ti-send me-1"></i>Kirim Laporan');
+        };
     });
 
     function showOfflineToast(msg) {

@@ -27,7 +27,7 @@ class ReportController extends Controller
                 'customer_name' => $r->task?->customer?->name,
                 'status'        => $r->status,
                 'created_at'    => $r->created_at->toDateTimeString(),
-                'photo_url'     => $r->photo ? asset('storage/' . $r->photo) : null,
+                'photo_url'     => !empty($r->photos) ? asset('storage/' . $r->photos[0]) : null,
             ];
         });
 
@@ -48,7 +48,7 @@ class ReportController extends Controller
             'id'             => $report->id,
             'description'    => $report->description,
             'status'         => $report->status,
-            'photo_url'      => $report->photo ? asset('storage/' . $report->photo) : null,
+            'photo_url'      => !empty($report->photos) ? asset('storage/' . $report->photos[0]) : null,
             'signature_tech' => $report->signature_tech,
             'signature_cust' => $report->signature_cust,
             'task'           => [
@@ -92,7 +92,7 @@ class ReportController extends Controller
             $imageData = base64_decode($imageData);
             $filename  = 'laporan/' . uniqid('rpt_', true) . '.jpg';
             Storage::disk('public')->put($filename, $imageData);
-            $data['photo'] = $filename;
+            $data['photos'] = [$filename];
         }
 
         $report = Report::create($data);

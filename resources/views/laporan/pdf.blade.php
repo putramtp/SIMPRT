@@ -116,12 +116,40 @@
     <div class="desc-block">{{ $laporan->task->description }}</div>
     @endif
 
-    {{-- Photo --}}
-    @if($laporan->photo)
+    {{-- Template data --}}
+    @if($laporan->template_data && $laporan->task->template && count($laporan->template_data))
+    <div class="section-title">{{ $laporan->task->template->name }}</div>
+    <table class="info-table">
+        @foreach($laporan->task->template->fields as $section)
+            @foreach($section['fields'] ?? [] as $field)
+                @if(in_array($field['type'], ['photo','signature'])) @continue @endif
+                @php $val = $laporan->template_data[$field['id']] ?? null; @endphp
+                <tr>
+                    <td class="key">{{ $field['label'] }}</td>
+                    <td class="val">
+                        @if($field['type'] === 'checkbox')
+                            {{ ($val == '1' || $val === true) ? '✓ Ya' : '✗ Tidak' }}
+                        @elseif($val !== null && $val !== '')
+                            {{ $val }}
+                        @else
+                            —
+                        @endif
+                    </td>
+                </tr>
+            @endforeach
+        @endforeach
+    </table>
+    @endif
+
+    {{-- Photos --}}
+    @php $allPhotos = $laporan->photos ?? []; @endphp
+    @if(count($allPhotos) > 0)
     <div class="section-title">Dokumentasi Foto</div>
+    @foreach($allPhotos as $i => $photoPath)
     <div class="photo-block">
-        <img class="photo-img" src="{{ public_path('storage/' . $laporan->photo) }}" alt="Foto Laporan">
+        <img class="photo-img" src="{{ public_path('storage/' . $photoPath) }}" alt="Foto {{ $i + 1 }}">
     </div>
+    @endforeach
     @endif
 
     {{-- Signatures --}}
