@@ -198,7 +198,7 @@ class LaporanController extends Controller
 
     public function pdf(Report $laporan)
     {
-        $laporan->load(['task.customer', 'task.template', 'teknisi']);
+        $laporan->load(['task.customer', 'task.template', 'task.assignees', 'teknisi']);
         $pdf = Pdf::loadView('laporan.pdf', compact('laporan'))->setPaper('A4', 'portrait');
         $filename = 'laporan-' . $laporan->id . '-' . now()->format('Ymd') . '.pdf';
         return $pdf->download($filename);
