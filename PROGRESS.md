@@ -259,3 +259,63 @@
 - Display in all views (show, customer/laporan/show, edit): tech sig → `asset('storage/' . $laporan->teknisi->signature)`; cust sig → `asset('storage/' . $laporan->signature_cust)`
 - PDF: both sigs use `public_path('storage/' . ...)` for dompdf local file access
 - `Api/ReportController`: `show()` returns `signature_tech_url` (from teknisi relation) and `signature_cust_url` (from path); `store()` saves `signature_cust` via same file pattern
+
+---
+
+## PDF Laporan Redesign — Professional Layout (2026-06-09) ✅
+
+- `laporan/pdf.blade.php` fully redesigned with a professional document structure:
+  - **Top accent bar** — 6px solid `#1565C0` stripe anchors the letterhead
+  - **Letterhead** — brand left (SIPRT + tagline + date), document title + report number + status badge right
+  - **Informasi Umum** — two-column key/value grid: Judul Tugas, Customer, Teknisi Pelaksana (all assignees), Dibuat Laporan Oleh, Deadline, Prioritas (color-coded badge), Status, Kontak Customer (address/phone/email)
+  - **Section headers** — white-on-blue solid bars for each section (Deskripsi Pekerjaan, Instruksi Tugas, Formulir, Dokumentasi Foto, Tanda Tangan)
+  - **Template field sections** — sub-section titles rendered as light-blue rows inside the template table
+  - **Photo grid** — 2-per-row layout with captions; single photo centered at 60% width
+  - **Signature block** — two-cell table with role label, signature image, name, designation, and date line under each
+  - **Fixed footer** — report number + customer name on every page, separated by a blue top border
+- `LaporanController@pdf`: added `task.assignees` to eager-load so all assignees appear in the PDF
+
+---
+
+## Laravel PWA Package — silviolleite/laravelpwa (2026-06-09) ✅
+
+- Installed `silviolleite/laravelpwa ^2.0` via Composer
+- Published config, icons, views, and serviceworker assets
+- `config/laravelpwa.php` configured with SIPRT branding: name/short_name `SIPRT`, theme `#1565C0`, bg `#f4f6fb`, portrait orientation, shortcuts to `/dashboard/teknisi/my` and `/laporan/create`; icon paths point to existing `public/favicon/` files
+- `resources/views/vendor/laravelpwa/meta.blade.php` overridden: SW registration changed from `/serviceworker.js` → `/sw.js` (keeps the existing custom service worker)
+- `resources/views/layouts/app.blade.php`:
+  - Replaced 5 manual PWA meta tags + `<link rel="manifest">` with single `@laravelPWA` directive
+  - Removed duplicate SW registration block at the bottom (now handled by the directive)
+- Package adds `/manifest.json` route (dynamic, served from config) and full iOS splash screen `<link>` tags for 10 device sizes
+- `resources/views/vendor/laravelpwa/offline.blade.php` updated to `@include('offline')` so both routes show the same page
+
+---
+
+## Offline Page Redesign (2026-06-09) ✅
+
+- `resources/views/offline.blade.php` fully redesigned:
+  - **Brand bar** — SIPRT logo + name at the top
+  - **Animated icon** — three pulse rings around wifi-off SVG to indicate "searching"
+  - **Status badge** — flips from yellow "Tidak Ada Koneksi" to green "Koneksi Tersedia" when network is restored
+  - **Feature availability cards** (3 rows): ✓ Cached pages, ✓ Queued offline laporan (auto-synced), ✗ Real-time data & notifications
+  - **Smart auto-reconnect**: pings server via `HEAD /?_offline_check=` every 8 seconds; listens to `online`/`offline` browser events; shows toast "Koneksi kembali — mengalihkan…" and auto-reloads after 1.8 s
+  - **Retry button** spins while checking, restores on failure
+  - **Footer note** with SIPRT branding and "Koneksi dipantau otomatis" info
+
+---
+
+## PWA Icons — SIPRT Logo Applied (2026-06-09) ✅
+
+- All 18 files in `public/images/icons/` replaced with SIPRT logo (`public/favicon/SIPRT.png`) resized via PHP GD:
+  - **8 app icons**: `icon-72x72.png` → `icon-512x512.png` — logo scaled to fill square canvas, white background
+  - **10 iOS splash screens**: `splash-640x1136.png` → `splash-2048x2732.png` — logo centered on white canvas at exact portrait dimensions
+- All icons referenced by `config/laravelpwa.php` and injected via `@laravelPWA` directive
+
+---
+
+## Offline Page Bug Fix (2026-06-09) ✅
+
+- `resources/views/offline.blade.php` — fixed two CSS stacking bugs:
+  - **`.pulse-ring`**: added missing `position: absolute` — without it, `inset: 0` had no effect and the three ring divs stacked as block elements in normal flow, pushing the icon down inside the 88px container and breaking layout
+  - **`.icon-bg`**: added `position: relative; z-index: 1` — absolute-positioned elements paint above static elements in CSS stacking order, so the icon face was being hidden behind the pulse rings
+  - Removed empty `.feat-text {}` CSS rule
