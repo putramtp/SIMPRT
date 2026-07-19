@@ -313,6 +313,21 @@
 
 ---
 
+## Report Access Assignment per Customer (2026-07-19) ✅
+
+- Migration `2026_07_19_000001_add_report_access_to_customers_table`: adds `report_access` boolean (default `false`) to `customers`; data-migrates existing customers to `true` so current portal visibility is preserved
+- `Customer` model: `report_access` added to `$fillable` + boolean cast
+- New page `GET customers/report-access` (`can:edit customers`) → `CustomerController@reportAccess`:
+  - DataTables Ajax listing all customers (nama, email, badge akun portal, jumlah tugas)
+  - Per-row toggle switch → `PATCH customers/{customer}/report-access` (JSON, returns live `granted` count)
+  - Stat badge "X dari Y customer memiliki akses laporan" updates live on toggle
+  - Route declared BEFORE `Route::resource('customers')` so the `{customer}` wildcard doesn't swallow `report-access`
+- "Akses Laporan" button added to `customers/index` page header (gated `can:edit customers`)
+- `CustomerDashboardController`: when `report_access` is false — dashboard + laporan list return empty collection with warning banner ("hubungi administrator"); laporan `show` aborts 403
+- New customers default to no access until admin/sales grants it; public signed-URL page (`/c/{customer}/laporan`) intentionally left ungated
+
+---
+
 ## Customer Signature Gate Removed (2026-07-19) ✅
 
 - `routes/web.php`: removed the `customer.signature` middleware wrapper around customer dashboard/laporan routes — customers now land directly on `customer.dashboard` after login without being forced to set a signature first

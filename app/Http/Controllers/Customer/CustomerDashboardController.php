@@ -24,10 +24,12 @@ class CustomerDashboardController extends Controller
     {
         $customer = $this->getCustomer();
 
-        $reports = Report::with(['task', 'teknisi'])
-            ->whereHas('task', fn($q) => $q->where('customer_id', $customer->id))
-            ->latest()
-            ->get();
+        $reports = $customer->report_access
+            ? Report::with(['task', 'teknisi'])
+                ->whereHas('task', fn($q) => $q->where('customer_id', $customer->id))
+                ->latest()
+                ->get()
+            : collect();
 
         return view('customer.dashboard', compact('customer', 'reports'));
     }
@@ -36,10 +38,12 @@ class CustomerDashboardController extends Controller
     {
         $customer = $this->getCustomer();
 
-        $reports = Report::with(['task', 'teknisi'])
-            ->whereHas('task', fn($q) => $q->where('customer_id', $customer->id))
-            ->latest()
-            ->get();
+        $reports = $customer->report_access
+            ? Report::with(['task', 'teknisi'])
+                ->whereHas('task', fn($q) => $q->where('customer_id', $customer->id))
+                ->latest()
+                ->get()
+            : collect();
 
         return view('customer.laporan.index', compact('customer', 'reports'));
     }
@@ -48,8 +52,8 @@ class CustomerDashboardController extends Controller
     {
         $customer = $this->getCustomer();
 
-        // Ensure this report belongs to this customer
-        if ($laporan->task?->customer_id !== $customer->id) {
+        // Report must belong to this customer, and the customer must have report access
+        if ($laporan->task?->customer_id !== $customer->id || !$customer->report_access) {
             abort(403, 'Anda tidak memiliki akses ke laporan ini.');
         }
 

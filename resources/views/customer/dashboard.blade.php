@@ -89,6 +89,13 @@
     $statusBadge = ['submitted' => 'badge-submitted', 'approved' => 'badge-approved', 'rejected' => 'badge-rejected'];
 @endphp
 
+@if(!$customer->report_access)
+<div class="alert alert-warning d-flex align-items-center gap-2" style="font-size:.85rem;">
+    <i class="ti ti-lock"></i>
+    <span>Akses laporan Anda belum diaktifkan. Silakan hubungi administrator untuk membuka akses.</span>
+</div>
+@endif
+
 {{-- ── Hero ── --}}
 <div class="cust-dash-hero">
     <div class="cust-dash-hero-top">

@@ -43,6 +43,13 @@
     <span>Laporan Saya — {{ $customer->name }}</span>
 </div>
 
+@if(!$customer->report_access)
+<div class="alert alert-warning d-flex align-items-center gap-2" style="font-size:.85rem;">
+    <i class="ti ti-lock"></i>
+    <span>Akses laporan Anda belum diaktifkan. Silakan hubungi administrator untuk membuka akses.</span>
+</div>
+@endif
+
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h5 class="mb-0" style="font-weight:700;font-size:15px;">Semua Laporan</h5>
     <span style="font-size:12px;color:var(--text-secondary);">{{ $reports->count() }} laporan</span>

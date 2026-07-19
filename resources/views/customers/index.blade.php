@@ -16,11 +16,18 @@
 
 <div class="page-header">
     <h4>Daftar Customer</h4>
-    @can('create customers')
-    <a href="{{ route('customers.create') }}" class="btn btn-primary btn-sm">
-        <i class="ti ti-plus me-1"></i>Tambah Customer
-    </a>
-    @endcan
+    <div class="d-flex gap-2">
+        @can('edit customers')
+        <a href="{{ route('customers.report-access') }}" class="btn btn-outline-primary btn-sm">
+            <i class="ti ti-lock-open me-1"></i>Akses Laporan
+        </a>
+        @endcan
+        @can('create customers')
+        <a href="{{ route('customers.create') }}" class="btn btn-primary btn-sm">
+            <i class="ti ti-plus me-1"></i>Tambah Customer
+        </a>
+        @endcan
+    </div>
 </div>
 
 @if(session('success'))

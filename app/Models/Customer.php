@@ -10,7 +10,9 @@ class Customer extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'phone', 'email', 'address'];
+    protected $fillable = ['name', 'phone', 'email', 'address', 'report_access'];
+
+    protected $casts = ['report_access' => 'boolean'];
 
     public function portalUser()
     {

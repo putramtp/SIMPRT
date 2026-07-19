@@ -110,6 +110,10 @@ Route::middleware('auth')->group(function () {
 
     // ── Customers ─────────────────────────────────────────────────────
     Route::middleware('can:view customers')->group(function () {
+        // Explicit path must come before the {customer} wildcard in the resource
+        Route::get('customers/report-access', [CustomerController::class, 'reportAccess'])
+            ->middleware('can:edit customers')
+            ->name('customers.report-access');
         Route::resource('customers', CustomerController::class);
         Route::get('customers/{customer}/laporan', [CustomerController::class, 'laporan'])
             ->middleware('can:view customer reports')
@@ -120,6 +124,9 @@ Route::middleware('auth')->group(function () {
         Route::post('customers/{customer}/portal-user/reset-password', [CustomerController::class, 'resetPortalPassword'])
             ->middleware('can:edit customers')
             ->name('customers.portal-user.reset-password');
+        Route::patch('customers/{customer}/report-access', [CustomerController::class, 'toggleReportAccess'])
+            ->middleware('can:edit customers')
+            ->name('customers.report-access.toggle');
     });
 
     }); // end signature.required group

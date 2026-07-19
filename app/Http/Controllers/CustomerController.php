@@ -19,7 +19,7 @@ class CustomerController extends Controller
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('action', function ($c) {
-                    $html = '';
+                    $html = '<a href="' . route('customers.show', $c) . '" class="btn btn-sm btn-outline-secondary">Detail</a> ';
                     if (auth()->user()->can('view customer reports')) {
                         $html .= '<a href="' . route('customers.laporan', $c) . '" class="btn btn-sm btn-outline-info">Laporan</a> ';
                     }
@@ -98,6 +98,45 @@ class CustomerController extends Controller
         $portalUser->update(['password' => Hash::make($validated['password'])]);
 
         return redirect()->route('customers.show', $customer)->with('success', 'Password portal customer berhasil direset.');
+    }
+
+    public function reportAccess(Request $request)
+    {
+        if ($request->ajax()) {
+            $query = Customer::withCount('tasks')->with('portalUser')->latest();
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('portal_badge', function ($c) {
+                    return $c->portalUser
+                        ? '<span class="badge bg-success">Ada</span>'
+                        : '<span class="badge bg-secondary">Belum ada</span>';
+                })
+                ->addColumn('access_toggle', function ($c) {
+                    $checked = $c->report_access ? ' checked' : '';
+                    return '<div class="form-check form-switch d-flex justify-content-center mb-0">'
+                        . '<input class="form-check-input access-switch" type="checkbox" role="switch"'
+                        . ' data-id="' . $c->id . '"' . $checked . '>'
+                        . '</div>';
+                })
+                ->rawColumns(['portal_badge', 'access_toggle'])
+                ->make(true);
+        }
+
+        $total   = Customer::count();
+        $granted = Customer::where('report_access', true)->count();
+
+        return view('customers.report-access', compact('total', 'granted'));
+    }
+
+    public function toggleReportAccess(Request $request, Customer $customer)
+    {
+        $customer->update(['report_access' => $request->boolean('access')]);
+
+        return response()->json([
+            'success' => true,
+            'access'  => $customer->report_access,
+            'granted' => Customer::where('report_access', true)->count(),
+        ]);
     }
 
     public function edit(Customer $customer)

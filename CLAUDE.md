@@ -52,8 +52,14 @@ All web feature routes live inside `middleware('auth')`. Key auth rules:
 - `GET /customer/login` → `CustomerLoginController@showLoginForm` — separate login page (no staff overlap)
 - `POST /customer/login` / `POST /customer/logout` — authenticate/deauthenticate against `customer` guard
 - `GET /customer/dashboard` → `CustomerDashboardController@index`
-- `GET /customer/laporan` / `GET /customer/laporan/{laporan}` — customer's own reports only
+- `GET /customer/laporan` / `GET /customer/laporan/{laporan}` — customer's own reports only; empty list + warning banner when `customers.report_access` is false (show aborts 403)
 - `GET/POST /customer/profile/signature` + `/customer/profile/password` — outside signature gate
+
+**Report access assignment** (admin/sales, `can:edit customers`):
+- `customers.report_access` boolean gates the whole customer portal report visibility; new customers default to `false` (no access) until granted
+- `GET customers/report-access` → `CustomerController@reportAccess` — DataTables Ajax page listing all customers with a per-row toggle switch; MUST be declared before `Route::resource('customers')` or the `{customer}` wildcard swallows it
+- `PATCH customers/{customer}/report-access` → `@toggleReportAccess` — JSON toggle; returns updated `granted` count
+- Entry point: "Akses Laporan" button on `customers/index` page header; the public signed URL page (`/c/{customer}/laporan`) is NOT gated by this flag
 
 **Teknisi dashboards:**
 - `/dashboard/teknisi/all` → `DashboardController@teknisiAll` (admin/sales) — all tasks, DataTables Ajax + Chart.js charts
