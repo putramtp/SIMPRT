@@ -58,6 +58,9 @@ self.addEventListener('fetch', function(event) {
     if (url.pathname === '/login' || url.pathname === '/logout' ||
         url.pathname === '/broadcasting/auth') return;
 
+    // Pass through PDF generation (streamed inline, must never be cached)
+    if (/\/pdf$/.test(url.pathname)) return;
+
     // Static assets (CSS, JS, images, fonts) — cache-first, then network
     if (isStaticAsset(url)) {
         event.respondWith(cacheFirst(req));
