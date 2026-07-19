@@ -36,11 +36,9 @@ Route::middleware(['auth:customer'])->prefix('customer')->name('customer.')->gro
     Route::get('/profile/password',  [CustomerProfileController::class, 'showPassword'])->name('profile.password.show');
     Route::post('/profile/password', [CustomerProfileController::class, 'updatePassword'])->name('profile.password.update');
 
-    Route::middleware('customer.signature')->group(function () {
-        Route::get('/dashboard',         [CustomerDashboardController::class, 'index'])->name('dashboard');
-        Route::get('/laporan',           [CustomerDashboardController::class, 'laporan'])->name('laporan');
-        Route::get('/laporan/{laporan}', [CustomerDashboardController::class, 'show'])->name('laporan.show');
-    });
+    Route::get('/dashboard',         [CustomerDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/laporan',           [CustomerDashboardController::class, 'laporan'])->name('laporan');
+    Route::get('/laporan/{laporan}', [CustomerDashboardController::class, 'show'])->name('laporan.show');
 });
 
 Auth::routes();

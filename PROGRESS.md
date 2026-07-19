@@ -313,6 +313,14 @@
 
 ---
 
+## Customer Signature Gate Removed (2026-07-19) ✅
+
+- `routes/web.php`: removed the `customer.signature` middleware wrapper around customer dashboard/laporan routes — customers now land directly on `customer.dashboard` after login without being forced to set a signature first
+- `EnsureCustomerHasSignature` middleware + `customer.signature` alias kept in `Kernel.php` (unused); `/customer/profile/signature` page still available for voluntary use
+- Staff (`web` guard) signature gate unchanged
+
+---
+
 ## Offline Page Bug Fix (2026-06-09) ✅
 
 - `resources/views/offline.blade.php` — fixed two CSS stacking bugs:

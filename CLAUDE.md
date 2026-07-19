@@ -51,7 +51,7 @@ All web feature routes live inside `middleware('auth')`. Key auth rules:
 **Customer portal routes** (separate `auth:customer` guard — prefix `/customer`):
 - `GET /customer/login` → `CustomerLoginController@showLoginForm` — separate login page (no staff overlap)
 - `POST /customer/login` / `POST /customer/logout` — authenticate/deauthenticate against `customer` guard
-- `GET /customer/dashboard` → `CustomerDashboardController@index` (requires `customer.signature` middleware)
+- `GET /customer/dashboard` → `CustomerDashboardController@index`
 - `GET /customer/laporan` / `GET /customer/laporan/{laporan}` — customer's own reports only
 - `GET/POST /customer/profile/signature` + `/customer/profile/password` — outside signature gate
 
@@ -172,8 +172,8 @@ Tasks support multiple assignees via a `task_user` pivot table (task_id, user_id
 
 ### First-login signature gate
 - **Staff** (`web` guard): `EnsureUserHasSignature` middleware (alias `signature.required`) redirects to `GET /profile/signature`. Profile routes declared outside the gate group.
-- **Customer** (`customer` guard): `EnsureCustomerHasSignature` middleware (alias `customer.signature`) redirects to `GET /customer/profile/signature`. Applied only inside the `auth:customer` protected group, after the profile routes.
-- Both gates check that `->signature` is non-null/non-empty.
+- **Customer** (`customer` guard): NOT gated — customers go straight to the dashboard after login. `EnsureCustomerHasSignature` (alias `customer.signature`) still exists in `Kernel.php` but is no longer applied to any route; the signature profile page remains available for customers to set it voluntarily.
+- The staff gate checks that `->signature` is non-null/non-empty.
 
 ### Sidebar user dropdown
 The `sidebar-footer` contains a `#sidebarUserToggle` button (avatar + name + role + chevron). Clicking it toggles `#sidebarUserMenu.open` via `max-height` CSS transition. The menu holds: Tanda Tangan → `/profile/signature`, Edit Password → `/profile/password`, Keluar (logout form). The IIFE in `app.blade.php` handles the toggle. The logout button keeps class `sidebar-logout` for the global submit-loading exclusion in `public.js`.
