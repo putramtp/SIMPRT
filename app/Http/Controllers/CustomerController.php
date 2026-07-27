@@ -8,6 +8,7 @@ use App\Models\Report;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Yajra\DataTables\Facades\DataTables;
 
 class CustomerController extends Controller
@@ -19,19 +20,24 @@ class CustomerController extends Controller
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('action', function ($c) {
-                    $html = '<a href="' . route('customers.show', $c) . '" class="btn btn-sm btn-outline-secondary">Detail</a> ';
+                    $html = '<div class="d-flex gap-1 flex-wrap">';
+                    $html .= '<a href="' . route('customers.show', $c) . '" class="btn btn-sm btn-outline-secondary">'
+                        . '<i class="ti ti-eye me-1"></i>Detail</a>';
                     if (auth()->user()->can('view customer reports')) {
-                        $html .= '<a href="' . route('customers.laporan', $c) . '" class="btn btn-sm btn-outline-info">Laporan</a> ';
+                        $html .= '<a href="' . route('customers.laporan', $c) . '" class="btn btn-sm btn-outline-info">'
+                            . '<i class="ti ti-file-text me-1"></i>Laporan</a>';
                     }
                     if (auth()->user()->can('edit customers')) {
-                        $html .= '<a href="' . route('customers.edit', $c) . '" class="btn btn-sm btn-outline-primary">Edit</a> ';
+                        $html .= '<a href="' . route('customers.edit', $c) . '" class="btn btn-sm btn-outline-primary">'
+                            . '<i class="ti ti-edit me-1"></i>Edit</a>';
                     }
                     if (auth()->user()->can('delete customers')) {
                         $html .= '<form action="' . route('customers.destroy', $c) . '" method="POST" class="d-inline"'
                             . ' onsubmit="return confirm(\'Hapus customer ini?\')">'
                             . csrf_field() . method_field('DELETE')
-                            . '<button class="btn btn-sm btn-outline-danger">Hapus</button></form>';
+                            . '<button class="btn btn-sm btn-outline-danger"><i class="ti ti-trash me-1"></i>Hapus</button></form>';
                     }
+                    $html .= '</div>';
                     return $html;
                 })
                 ->rawColumns(['action'])
@@ -185,18 +191,18 @@ class CustomerController extends Controller
             ->latest()
             ->get();
 
-        $signedUrl = URL::temporarySignedRoute(
-            'customers.public-laporan',
-            now()->addDays(30),
-            ['customer' => $customer->id]
-        );
+        if (!$customer->report_token) {
+            $customer->update(['report_token' => Str::random(32)]);
+        }
+
+        $signedUrl = $this->buildSignedLaporanUrl($customer);
 
         return view('laporan.customer', compact('customer', 'reports', 'signedUrl'));
     }
 
     public function publicLaporan(Request $request, Customer $customer)
     {
-        if (!$request->hasValidSignature()) {
+        if (!$request->hasValidSignature() || $request->query('token') !== $customer->report_token) {
             abort(403, 'Link tidak valid atau sudah kadaluarsa.');
         }
 
@@ -206,5 +212,24 @@ class CustomerController extends Controller
             ->get();
 
         return view('laporan.customer_public', compact('customer', 'reports'));
+    }
+
+    public function regenerateReportToken(Customer $customer)
+    {
+        $customer->update(['report_token' => Str::random(32)]);
+
+        return response()->json([
+            'success'    => true,
+            'signed_url' => $this->buildSignedLaporanUrl($customer),
+        ]);
+    }
+
+    private function buildSignedLaporanUrl(Customer $customer): string
+    {
+        return URL::temporarySignedRoute(
+            'customers.public-laporan',
+            now()->addDays(30),
+            ['customer' => $customer->id, 'token' => $customer->report_token]
+        );
     }
 }

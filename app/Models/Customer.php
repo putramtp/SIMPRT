@@ -10,7 +10,7 @@ class Customer extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'phone', 'email', 'address', 'report_access'];
+    protected $fillable = ['name', 'phone', 'email', 'address', 'report_access', 'report_token'];
 
     protected $casts = ['report_access' => 'boolean'];
 

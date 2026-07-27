@@ -17,16 +17,20 @@ class UserController extends Controller
                 ->addIndexColumn()
                 ->addColumn('role', fn($u) => $u->roles->pluck('name')->join(', ') ?: '-')
                 ->addColumn('action', function ($u) {
-                    $html = '<a href="' . route('users.show', $u) . '" class="btn btn-sm btn-outline-secondary">Detail</a> ';
+                    $html = '<div class="d-flex gap-1 flex-wrap">';
+                    $html .= '<a href="' . route('users.show', $u) . '" class="btn btn-sm btn-outline-secondary">'
+                        . '<i class="ti ti-eye me-1"></i>Detail</a>';
                     if (auth()->user()->can('edit users')) {
-                        $html .= '<a href="' . route('users.edit', $u) . '" class="btn btn-sm btn-outline-primary">Edit</a> ';
+                        $html .= '<a href="' . route('users.edit', $u) . '" class="btn btn-sm btn-outline-primary">'
+                            . '<i class="ti ti-edit me-1"></i>Edit</a>';
                     }
                     if (auth()->user()->can('delete users')) {
                         $html .= '<form action="' . route('users.destroy', $u) . '" method="POST" class="d-inline"'
                             . ' onsubmit="return confirm(\'Hapus user ini?\')">'
                             . csrf_field() . method_field('DELETE')
-                            . '<button class="btn btn-sm btn-outline-danger">Hapus</button></form>';
+                            . '<button class="btn btn-sm btn-outline-danger"><i class="ti ti-trash me-1"></i>Hapus</button></form>';
                     }
+                    $html .= '</div>';
                     return $html;
                 })
                 ->rawColumns(['action'])

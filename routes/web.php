@@ -127,6 +127,9 @@ Route::middleware('auth')->group(function () {
         Route::patch('customers/{customer}/report-access', [CustomerController::class, 'toggleReportAccess'])
             ->middleware('can:edit customers')
             ->name('customers.report-access.toggle');
+        Route::patch('customers/{customer}/report-token/regenerate', [CustomerController::class, 'regenerateReportToken'])
+            ->middleware('can:edit customers')
+            ->name('customers.report-token.regenerate');
     });
 
     }); // end signature.required group

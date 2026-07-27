@@ -34,12 +34,16 @@ class TugasController extends Controller
                 })
                 ->addColumn('due_date_fmt', fn($t) => $t->due_date?->format('d/m/Y') ?? '-')
                 ->addColumn('action', function ($t) {
-                    return '<a href="' . route('tugas.show', $t) . '" class="btn btn-sm btn-outline-secondary">Detail</a> '
-                        . '<a href="' . route('tugas.edit', $t) . '" class="btn btn-sm btn-outline-primary">Edit</a> '
+                    return '<div class="d-flex gap-1 flex-wrap">'
+                        . '<a href="' . route('tugas.show', $t) . '" class="btn btn-sm btn-outline-secondary">'
+                        . '<i class="ti ti-eye me-1"></i>Detail</a>'
+                        . '<a href="' . route('tugas.edit', $t) . '" class="btn btn-sm btn-outline-primary">'
+                        . '<i class="ti ti-edit me-1"></i>Edit</a>'
                         . '<form action="' . route('tugas.destroy', $t) . '" method="POST" class="d-inline"'
                         . ' onsubmit="return confirm(\'Hapus tugas ini?\')">'
                         . csrf_field() . method_field('DELETE')
-                        . '<button class="btn btn-sm btn-outline-danger">Hapus</button></form>';
+                        . '<button class="btn btn-sm btn-outline-danger"><i class="ti ti-trash me-1"></i>Hapus</button></form>'
+                        . '</div>';
                 })
                 ->rawColumns(['status_badge', 'action'])
                 ->make(true);

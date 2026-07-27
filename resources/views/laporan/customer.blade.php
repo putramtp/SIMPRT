@@ -129,6 +129,17 @@
                 <div id="copyFeedback" style="font-size:.75rem;color:var(--green);margin-top:.4rem;display:none;">
                     <i class="ti ti-check"></i> Link disalin!
                 </div>
+                @can('edit customers')
+                <div style="margin-top:1rem;padding-top:.85rem;border-top:1px solid var(--border-light);">
+                    <button class="btn btn-outline-danger btn-sm" id="regenerateShareBtn" type="button">
+                        <i class="ti ti-refresh me-1"></i>Perbarui Link
+                    </button>
+                    <div style="font-size:.75rem;color:var(--text-secondary);margin-top:.5rem;">
+                        <i class="ti ti-alert-triangle" style="color:var(--orange);"></i>
+                        Membuat link baru dan <strong>langsung menonaktifkan link lama</strong> yang pernah dibagikan.
+                    </div>
+                </div>
+                @endcan
             </div>
         </div>
     </div>
@@ -198,6 +209,40 @@ $(function () {
             document.execCommand('copy');
             $('#copyFeedback').fadeIn(150).delay(2000).fadeOut(300);
         }
+    });
+
+    /* Regenerate share link (invalidates the old one) */
+    $('#regenerateShareBtn').on('click', function () {
+        if (!confirm('Buat link baru? Link lama yang sudah dibagikan akan langsung tidak berlaku lagi.')) {
+            return;
+        }
+        var $btn = $(this);
+        $btn.prop('disabled', true);
+        var csrf = document.querySelector('meta[name="csrf-token"]').content;
+        fetch('{{ route("customers.report-token.regenerate", $customer) }}', {
+            method: 'PATCH',
+            headers: {
+                'X-CSRF-TOKEN': csrf,
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+            },
+        })
+        .then(function (res) {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+            return res.json();
+        })
+        .then(function (data) {
+            $('#shareUrlInput').val(data.signed_url);
+            $('#copyFeedback').text('Link baru dibuat!').fadeIn(150).delay(2000).fadeOut(300, function () {
+                $(this).text('Link disalin!');
+            });
+        })
+        .catch(function () {
+            alert('Gagal membuat link baru. Coba lagi.');
+        })
+        .finally(function () {
+            $btn.prop('disabled', false);
+        });
     });
 
     var statusLabels = { submitted: 'Terkirim', approved: 'Disetujui' };

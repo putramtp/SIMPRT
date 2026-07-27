@@ -61,6 +61,12 @@ All web feature routes live inside `middleware('auth')`. Key auth rules:
 - `PATCH customers/{customer}/report-access` → `@toggleReportAccess` — JSON toggle; returns updated `granted` count
 - Entry point: "Akses Laporan" button on `customers/index` page header; the public signed URL page (`/c/{customer}/laporan`) is NOT gated by this flag
 
+**Public signed URL token rotation** (`customers.report_token` column):
+- The signed URL for `/c/{customer}/laporan` embeds a `token` query param (`customers.report_token`, random 32-char string) alongside Laravel's own `signature`/`expires` — `publicLaporan()` checks `hasValidSignature()` **and** that `token` matches the stored value
+- `CustomerController@laporan` lazily generates `report_token` on first view if null, then builds the URL via private helper `buildSignedLaporanUrl()`
+- `PATCH customers/{customer}/report-token/regenerate` (`can:edit customers`) rotates the token and returns a fresh signed URL as JSON — this immediately invalidates every previously issued link for that customer, since old links carry the old token value
+- "Perbarui" button in the share modal on `laporan/customer.blade.php` (visible only to users with `edit customers`) calls this endpoint via `fetch()` and swaps the input value with the new link
+
 **Teknisi dashboards:**
 - `/dashboard/teknisi/all` → `DashboardController@teknisiAll` (admin/sales) — all tasks, DataTables Ajax + Chart.js charts
 - `/dashboard/teknisi/my`  → `DashboardController@teknisiMy`  (teknisi)      — own tasks, mobile-first card layout

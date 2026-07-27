@@ -26,11 +26,14 @@ class LaporanController extends Controller
                 ->addColumn('status_badge', fn($r) => '<span class="badge bg-info">' . ucfirst($r->status) . '</span>')
                 ->addColumn('tanggal', fn($r) => $r->created_at->format('d/m/Y'))
                 ->addColumn('action', function ($r) {
-                    return '<a href="' . route('laporan.show', $r) . '" class="btn btn-sm btn-outline-secondary">Detail</a> '
+                    return '<div class="d-flex gap-1 flex-wrap">'
+                        . '<a href="' . route('laporan.show', $r) . '" class="btn btn-sm btn-outline-secondary">'
+                        . '<i class="ti ti-eye me-1"></i>Detail</a>'
                         . '<form action="' . route('laporan.destroy', $r) . '" method="POST" class="d-inline"'
                         . ' onsubmit="return confirm(\'Hapus laporan ini?\')">'
                         . csrf_field() . method_field('DELETE')
-                        . '<button class="btn btn-sm btn-outline-danger">Hapus</button></form>';
+                        . '<button class="btn btn-sm btn-outline-danger"><i class="ti ti-trash me-1"></i>Hapus</button></form>'
+                        . '</div>';
                 })
                 ->rawColumns(['status_badge', 'action'])
                 ->make(true);
