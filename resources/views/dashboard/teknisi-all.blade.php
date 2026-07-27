@@ -188,7 +188,6 @@ $(function () {
         },
         order: [[0, 'asc']],
         pageLength: 10,
-        responsive: true,
     });
 
     // ── Status Doughnut Chart ──────────────────────────────────────

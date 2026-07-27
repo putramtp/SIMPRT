@@ -1,6 +1,6 @@
 'use strict';
 
-var CACHE_NAME = 'siprt-v4';
+var CACHE_NAME = 'siprt-v5';
 var OFFLINE_URL = '/offline';
 
 // App shell resources pre-cached on install

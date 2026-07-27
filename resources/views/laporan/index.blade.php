@@ -57,7 +57,6 @@ $(function () {
     $('#laporanTable').DataTable({
         processing: true,
         serverSide: true,
-        responsive: true,
         ajax: '{{ route("laporan.index") }}',
         columns: [
             { data: 'DT_RowIndex',   name: 'id', orderable: false, searchable: false, width: '40px' },

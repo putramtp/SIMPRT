@@ -69,7 +69,6 @@ $(function () {
     $('#reportAccessTable').DataTable({
         processing: true,
         serverSide: true,
-        responsive: true,
         ajax: '{{ route("customers.report-access") }}',
         columns: [
             { data: 'DT_RowIndex',   name: 'id', orderable: false, searchable: false, width: '40px' },

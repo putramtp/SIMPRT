@@ -490,6 +490,7 @@ body {
   gap: 12px;
 }
 .card.no-pad { padding: 0; }
+.card-body { min-width: 0; } /* flex item default min-width:auto would stretch to the table's width instead of letting .table-responsive scroll */
 .card-inner { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
 .card-section-title {
   font-size: 13px;

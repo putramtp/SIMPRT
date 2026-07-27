@@ -57,7 +57,6 @@ $(function () {
     $('#tugasTable').DataTable({
         processing: true,
         serverSide: true,
-        responsive: true,
         ajax: '{{ route("tugas.index") }}',
         columns: [
             { data: 'DT_RowIndex', name: 'id', orderable: false, searchable: false, width: '40px' },
